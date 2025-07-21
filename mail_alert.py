@@ -21,7 +21,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 # 配置参数
-TOKENS = ["BTC", "ETH", "SOL"]  # 要监控的代币
+TOKENS = ["BTC", "ETH", "SOL", "UNI", "AAVE", "PENDLE", "PEPE", "PENGU"]  # 要监控的代币
 INTERVAL = "4h"  # K线周期
 JSON_FILE = "mail_alerts.json"  # JSON文件路径
 CHECK_INTERVAL = 300  # 检查间隔（秒），5分钟
@@ -161,10 +161,17 @@ def save_data(data):
         return False
 
 def has_ema_changed(previous_data, current_data):
-    """检查EMA状态是否有变化，返回变化的币种列表"""
+    """检查EMA状态是否有变化，返回需要提醒的币种列表（只在突破上涨黄线、突破上涨绿线、跌破底部绿线、跌破底部蓝线时提醒）"""
+    # 只关注这四种状态
+    notify_ema_status = [
+        "突破上涨黄线",
+        "突破上涨绿线",
+        "跌破底部绿线",
+        "跌破底部蓝线"
+    ]
     if not previous_data:
-        # 如果没有之前的数据，所有币种都视为有变化
-        return [item.get("Token") for item in current_data if "Token" in item]
+        # 如果没有之前的数据，所有币种都视为有变化，但只提醒指定状态
+        return [item.get("Token") for item in current_data if "Token" in item and item.get("EMA") in notify_ema_status]
     
     # 创建之前数据的映射 {Token: EMA}
     prev_map = {item["Token"]: item["EMA"] for item in previous_data if "Token" in item and "EMA" in item}
@@ -174,12 +181,10 @@ def has_ema_changed(previous_data, current_data):
     for item in current_data:
         token = item.get("Token")
         ema = item.get("EMA")
-        
         if token and ema:
-            # 如果代币不在之前的数据中，或者EMA状态发生变化
-            if token not in prev_map or prev_map[token] != ema:
+            # 只在指定状态变化时提醒
+            if (token not in prev_map or prev_map[token] != ema) and ema in notify_ema_status:
                 changed_tokens.append(token)
-    
     return changed_tokens
 
 def send_email_alert(data, changed_tokens):

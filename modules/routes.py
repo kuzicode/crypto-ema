@@ -47,7 +47,7 @@ def init_routes(app):
             # 获取当前最新价格和MA线值
             latest = bot.indicators.iloc[-1]
             market_info = {
-                "price": f"{latest['Close']:.2f} USDT",
+                "price": float(latest['Close']),
                 "ma2": float(latest['MA2']),
                 "ma3": float(latest['MA3']),
                 "ma4": float(latest['MA4']),

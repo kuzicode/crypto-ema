@@ -157,14 +157,23 @@
                     
                     // 更新币种分析信息
                     if (data.market_info) {
-                        document.getElementById('current-price').textContent = data.market_info.price;
+                        // 币价精度判断
+                        let priceValue = data.market_info.price;
+                        let priceNum = parseFloat(priceValue);
+                        let priceDisplay = priceNum < 1 ? priceNum.toFixed(6) : priceNum.toFixed(2);
+                        document.getElementById('current-price').textContent = priceDisplay + ' USDT';
                         
-                        // 更新MA线价格显示
-                        document.getElementById('ma2-price').textContent = data.market_info.ma2.toFixed(2) + ' USDT';
-                        document.getElementById('ma3-price').textContent = data.market_info.ma3.toFixed(2) + ' USDT';
-                        document.getElementById('ma4-price').textContent = data.market_info.ma4.toFixed(2) + ' USDT';
-                        document.getElementById('ma5-price').textContent = data.market_info.ma5.toFixed(2) + ' USDT';
-                        document.getElementById('ma6-price').textContent = data.market_info.ma6.toFixed(2) + ' USDT';
+                        // MA线精度判断函数
+                        function formatPrice(val) {
+                            if (val < 0.0001) return val.toFixed(8);
+                            if (val < 1) return val.toFixed(6);
+                            return val.toFixed(2);
+                        }
+                        document.getElementById('ma2-price').textContent = formatPrice(data.market_info.ma2) + ' USDT';
+                        document.getElementById('ma3-price').textContent = formatPrice(data.market_info.ma3) + ' USDT';
+                        document.getElementById('ma4-price').textContent = formatPrice(data.market_info.ma4) + ' USDT';
+                        document.getElementById('ma5-price').textContent = formatPrice(data.market_info.ma5) + ' USDT';
+                        document.getElementById('ma6-price').textContent = formatPrice(data.market_info.ma6) + ' USDT';
                     }
                     
                     // 更新分析结果
