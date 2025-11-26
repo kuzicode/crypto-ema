@@ -23,7 +23,7 @@ logger = logging.getLogger(__name__)
 # 配置参数
 TOKENS = ["BTC", "ETH", "SOL"]  # 要监控的代币
 INTERVAL = "4h"  # K线周期
-JSON_FILE = "telegram_alerts.json"  # JSON文件路径
+JSON_FILE = "telegram_alert.json"  # JSON文件路径
 CHECK_INTERVAL = 300  # 检查间隔（秒），5分钟
 
 # Telegram配置 - 从 .env 文件加载
@@ -244,17 +244,15 @@ def send_telegram_alert(data, changed_tokens):
             ma3 = item.get("MA3", "")  # 上涨线（浅绿）
             ma4 = item.get("MA4", "")  # 强势线（深绿）
             
-            # 为变化的币种添加标记
+            # 为变化的币种添加标记（状态也加粗）
             if token in changed_tokens:
-                message += f"🔔 *{token}* ${price} {ema}\n"
+                message += f"🔔 *{token}* ${price} *{ema}*\n"
             else:
                 message += f"▫️ {token} ${price} {ema}\n"
             
             # 各线位价格（简洁列表）
             # 🔴超跌线(深红) 🔻下跌线(浅红) ⚪中线 🍀上涨线(浅绿) 🌲强势线(深绿)
             message += f"🔴{ma6} 🔻{ma5} ⚪{ma2} 🍀{ma3} 🌲{ma4}\n\n"
-        
-        message += "_Powered by CashMiner_"
         
         # 发送消息
         url = f"https://api.telegram.org/bot{bot_token}/sendMessage"
@@ -291,7 +289,7 @@ def send_telegram_alert(data, changed_tokens):
         return False
 
 # 测试模式开关 - 设为 True 时每次运行都发送消息
-TEST_MODE = True
+TEST_MODE = False
 
 def main():
     """主函数"""
@@ -314,6 +312,12 @@ def main():
         
         # 加载之前的数据
         previous_data = load_previous_data()
+        
+        # 首次运行时初始化数据（无论什么状态都保存）
+        if not previous_data:
+            logger.info("首次运行，初始化数据...")
+            save_data(current_data)
+            return
         
         # 检查EMA状态是否有变化
         changed_tokens = has_ema_changed(previous_data, current_data)
