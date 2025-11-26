@@ -127,13 +127,13 @@ def init_routes(app):
             
     @app.route('/get_price_alerts', methods=['GET'])
     def get_price_alerts():
-        """获取币价变动提醒记录"""
+        """获取币价变动提醒记录（从 telegram_alert.json 读取）"""
         try:
             import os
             import json
             
-            # 定义JSON文件路径
-            json_file = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'mail_alerts.json')
+            # 定义JSON文件路径（改用 telegram_alert.json）
+            json_file = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'telegram_alert.json')
             
             # 检查文件是否存在
             if not os.path.exists(json_file):

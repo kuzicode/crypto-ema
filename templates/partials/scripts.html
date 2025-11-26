@@ -478,18 +478,18 @@
                         // 获取EMA状态的CSS类
                         let emaClass = 'ema-between-ma5-ma2'; // 默认类
                         
-                        // 根据EMA状态设置相应的CSS类
-                        if (token.EMA === '突破强势线') {
+                        // 根据EMA状态设置相应的CSS类（支持带emoji和不带emoji的格式）
+                        if (token.EMA.includes('突破强势线') || token.EMA_Key === 'above_ma4') {
                             emaClass = 'ema-above-ma4';
-                        } else if (token.EMA === '突破上涨线') {
+                        } else if (token.EMA.includes('突破上涨线') || token.EMA_Key === 'above_ma3') {
                             emaClass = 'ema-above-ma3';
-                        } else if (token.EMA === '盘整区上行') {
+                        } else if (token.EMA.includes('盘整区上行') || token.EMA_Key === 'between_ma2_ma3') {
                             emaClass = 'ema-between-ma2-ma3';
-                        } else if (token.EMA === '盘整区下行') {
+                        } else if (token.EMA.includes('盘整区下行') || token.EMA_Key === 'between_ma5_ma2') {
                             emaClass = 'ema-between-ma5-ma2';
-                        } else if (token.EMA === '跌破下跌线') {
+                        } else if (token.EMA.includes('跌破下跌线') || token.EMA_Key === 'below_ma5') {
                             emaClass = 'ema-below-ma5';
-                        } else if (token.EMA === '跌破超跌线') {
+                        } else if (token.EMA.includes('跌破超跌线') || token.EMA_Key === 'below_ma6') {
                             emaClass = 'ema-below-ma6';
                         }
                         
