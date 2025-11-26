@@ -66,12 +66,12 @@ if not EMAIL_CONFIG.get("password") and os.environ.get("QQ_EMAIL_AUTH_CODE"):
 
 # EMA状态映射
 EMA_STATUS_MAP = {
-    "above_ma4": "突破上涨黄线",
-    "above_ma3": "突破上涨绿线",
+    "above_ma4": "突破强势线",
+    "above_ma3": "突破上涨线",
     "between_ma2_ma3": "盘整区上行",
     "between_ma5_ma2": "盘整区下行",
-    "below_ma5": "跌破底部绿线",
-    "below_ma6": "跌破底部蓝线"
+    "below_ma5": "跌破下跌线",
+    "below_ma6": "跌破超跌线"
 }
 
 def get_token_data():
@@ -161,10 +161,17 @@ def save_data(data):
         return False
 
 def has_ema_changed(previous_data, current_data):
-    """检查EMA状态是否有变化，返回变化的币种列表"""
+    """检查EMA状态是否有变化，返回需要提醒的币种列表（只在突破强势线、突破上涨线、跌破下跌线、跌破超跌线时提醒）"""
+    # 只关注这四种状态
+    notify_ema_status = [
+        "突破强势线",
+        "突破上涨线",
+        "跌破下跌线",
+        "跌破超跌线"
+    ]
     if not previous_data:
-        # 如果没有之前的数据，所有币种都视为有变化
-        return [item.get("Token") for item in current_data if "Token" in item]
+        # 如果没有之前的数据，所有币种都视为有变化，但只提醒指定状态
+        return [item.get("Token") for item in current_data if "Token" in item and item.get("EMA") in notify_ema_status]
     
     # 创建之前数据的映射 {Token: EMA}
     prev_map = {item["Token"]: item["EMA"] for item in previous_data if "Token" in item and "EMA" in item}
@@ -174,12 +181,10 @@ def has_ema_changed(previous_data, current_data):
     for item in current_data:
         token = item.get("Token")
         ema = item.get("EMA")
-        
         if token and ema:
-            # 如果代币不在之前的数据中，或者EMA状态发生变化
-            if token not in prev_map or prev_map[token] != ema:
+            # 只在指定状态变化时提醒
+            if (token not in prev_map or prev_map[token] != ema) and ema in notify_ema_status:
                 changed_tokens.append(token)
-    
     return changed_tokens
 
 def send_email_alert(data, changed_tokens):
