@@ -10,6 +10,10 @@ import base64
 import io
 import time
 
+# 配置中文字体支持
+plt.rcParams['font.sans-serif'] = ['Arial Unicode MS', 'SimHei', 'DejaVu Sans', 'Heiti TC', 'PingFang SC']
+plt.rcParams['axes.unicode_minus'] = False  # 解决负号显示问题
+
 logger = logging.getLogger(__name__)
 
 # REST API: 币安 API K-line数据 
@@ -316,12 +320,12 @@ class KlineBot:
             plt.style.use('dark_background')  # 使用暗色主题，更符合加密货币风格
 
             # 绘制MA1到MA6
-            ax1.plot(df['MA1'], label='Current Price', color='#00FFFF', linewidth=2)  # 青色
-            ax1.plot(df['MA2'], label='MA2', color='#808080')
-            ax1.plot(df['MA3'], label='MA3', color='#32CD32')
-            ax1.plot(df['MA4'], label='MA4', color='#FFFF00')
-            ax1.plot(df['MA5'], label='MA5', color='#32CD32', linestyle='--')
-            ax1.plot(df['MA6'], label='MA6', color='#4169E1', linestyle='--')
+            ax1.plot(df['MA1'], label='Current Price', color='#00FFFF', linewidth=2)  # 青色-当前价格
+            ax1.plot(df['MA2'], label='中线', color='#FFFFFF')              # 白色-中线
+            ax1.plot(df['MA3'], label='上涨线', color='#90EE90')            # 浅绿-上涨线（浅）
+            ax1.plot(df['MA4'], label='强势线', color='#228B22')            # 深绿-强势线（深）
+            ax1.plot(df['MA5'], label='下跌线', color='#FF6B6B', linestyle='--')  # 浅红-下跌线（浅）
+            ax1.plot(df['MA6'], label='超跌线', color='#DC143C', linestyle='--')  # 深红-超跌线（深）
 
             # 设置日期格式和刻度
             # 调整为每50个点取一个刻度，避免过多刻度导致的显示问题
@@ -417,11 +421,11 @@ def token_trend(symbol, interval):
         
         # 分析当前价格与各MA线的关系
         price = latest['MA1']  # MA1是当前价格
-        ma2 = latest['MA2']    # 中线
-        ma3 = latest['MA3']    # 上绿线
-        ma4 = latest['MA4']    # 上黄线
-        ma5 = latest['MA5']    # 下绿线
-        ma6 = latest['MA6']    # 下蓝线
+        ma2 = latest['MA2']    # 中线（白色）
+        ma3 = latest['MA3']    # 上涨线（黄色）
+        ma4 = latest['MA4']    # 强势线（橙色）
+        ma5 = latest['MA5']    # 下跌线（绿色）
+        ma6 = latest['MA6']    # 超跌线（红色）
         
         # 判断趋势类别
         if price > ma4:

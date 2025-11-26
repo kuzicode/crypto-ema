@@ -333,15 +333,15 @@
         const displayMarketTrends = (trends) => {
             const trendsHtml = `
                 <div class="trend-category">
-                    <span class="trend-title trend-yellow">
-                        突破上涨黄线
+                    <span class="trend-title trend-dark-green">
+                        突破强势线
                         <span class="trend-count">(${trends.above_ma4.length})</span>:
                     </span>
                     <span class="trend-symbols">${trends.above_ma4.join(', ') || '无'}</span>
                 </div>
                 <div class="trend-category">
-                    <span class="trend-title trend-green">
-                        突破上涨绿线
+                    <span class="trend-title trend-light-green">
+                        突破上涨线
                         <span class="trend-count">(${trends.above_ma3.length})</span>:
                     </span>
                     <span class="trend-symbols">${trends.above_ma3.join(', ') || '无'}</span>
@@ -361,15 +361,15 @@
                     <span class="trend-symbols">${trends.between_ma5_ma2.join(', ') || '无'}</span>
                 </div>
                 <div class="trend-category">
-                    <span class="trend-title trend-green-down">
-                        跌破底部绿线
+                    <span class="trend-title trend-light-red">
+                        跌破下跌线
                         <span class="trend-count">(${trends.below_ma5.length})</span>:
                     </span>
                     <span class="trend-symbols">${trends.below_ma5.join(', ') || '无'}</span>
                 </div>
                 <div class="trend-category">
-                    <span class="trend-title trend-blue">
-                        跌破底部蓝线
+                    <span class="trend-title trend-dark-red">
+                        跌破超跌线
                         <span class="trend-count">(${trends.below_ma6.length})</span>:
                     </span>
                     <span class="trend-symbols">${trends.below_ma6.join(', ') || '无'}</span>
@@ -479,17 +479,17 @@
                         let emaClass = 'ema-between-ma5-ma2'; // 默认类
                         
                         // 根据EMA状态设置相应的CSS类
-                        if (token.EMA === '突破上涨黄线') {
+                        if (token.EMA === '突破强势线') {
                             emaClass = 'ema-above-ma4';
-                        } else if (token.EMA === '突破上涨绿线') {
+                        } else if (token.EMA === '突破上涨线') {
                             emaClass = 'ema-above-ma3';
                         } else if (token.EMA === '盘整区上行') {
                             emaClass = 'ema-between-ma2-ma3';
                         } else if (token.EMA === '盘整区下行') {
                             emaClass = 'ema-between-ma5-ma2';
-                        } else if (token.EMA === '跌破底部绿线') {
+                        } else if (token.EMA === '跌破下跌线') {
                             emaClass = 'ema-below-ma5';
-                        } else if (token.EMA === '跌破底部蓝线') {
+                        } else if (token.EMA === '跌破超跌线') {
                             emaClass = 'ema-below-ma6';
                         }
                         

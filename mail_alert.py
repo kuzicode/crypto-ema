@@ -21,7 +21,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 # 配置参数
-TOKENS = ["BTC", "ETH", "SOL", "UNI", "AAVE", "PENDLE", "PEPE", "PENGU"]  # 要监控的代币
+TOKENS = ["BTC", "ETH", "SOL"]  # 要监控的代币
 INTERVAL = "4h"  # K线周期
 JSON_FILE = "mail_alerts.json"  # JSON文件路径
 CHECK_INTERVAL = 300  # 检查间隔（秒），5分钟
@@ -66,12 +66,12 @@ if not EMAIL_CONFIG.get("password") and os.environ.get("QQ_EMAIL_AUTH_CODE"):
 
 # EMA状态映射
 EMA_STATUS_MAP = {
-    "above_ma4": "突破上涨黄线",
-    "above_ma3": "突破上涨绿线",
+    "above_ma4": "突破强势线",
+    "above_ma3": "突破上涨线",
     "between_ma2_ma3": "盘整区上行",
     "between_ma5_ma2": "盘整区下行",
-    "below_ma5": "跌破底部绿线",
-    "below_ma6": "跌破底部蓝线"
+    "below_ma5": "跌破下跌线",
+    "below_ma6": "跌破超跌线"
 }
 
 def get_token_data():
@@ -161,13 +161,13 @@ def save_data(data):
         return False
 
 def has_ema_changed(previous_data, current_data):
-    """检查EMA状态是否有变化，返回需要提醒的币种列表（只在突破上涨黄线、突破上涨绿线、跌破底部绿线、跌破底部蓝线时提醒）"""
+    """检查EMA状态是否有变化，返回需要提醒的币种列表（只在突破强势线、突破上涨线、跌破下跌线、跌破超跌线时提醒）"""
     # 只关注这四种状态
     notify_ema_status = [
-        "突破上涨黄线",
-        "突破上涨绿线",
-        "跌破底部绿线",
-        "跌破底部蓝线"
+        "突破强势线",
+        "突破上涨线",
+        "跌破下跌线",
+        "跌破超跌线"
     ]
     if not previous_data:
         # 如果没有之前的数据，所有币种都视为有变化，但只提醒指定状态

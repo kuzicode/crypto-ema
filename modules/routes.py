@@ -88,12 +88,12 @@ def init_routes(app):
             
             # 定义趋势分类
             trends = {
-                'above_ma4': [],    # 突破上涨黄线
-                'above_ma3': [],    # 突破上涨绿线
+                'above_ma4': [],    # 突破强势线（深绿）
+                'above_ma3': [],    # 突破上涨线（浅绿）
                 'between_ma2_ma3': [],  # 盘整区上行
                 'between_ma5_ma2': [],  # 盘整区下行
-                'below_ma5': [],    # 跌破底部绿线
-                'below_ma6': []     # 跌破底部蓝线
+                'below_ma5': [],    # 跌破下跌线（浅红）
+                'below_ma6': []     # 跌破超跌线（深红）
             }
             
             # 使用线程池并行获取数据
