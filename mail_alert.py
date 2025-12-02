@@ -273,7 +273,7 @@ def send_email_alert(data, changed_tokens):
         html_content += """
             </table>
             <p>此邮件由自动监控系统发送，无需回复。</p>
-            <p>Power by CashMiner</p>
+            <p>Power by QKL GROUP</p>
         </body>
         </html>
         """

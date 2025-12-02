@@ -316,24 +316,45 @@ class KlineBot:
                 return None, f"No data available for {self.symbol}. Please check if this symbol exists on Binance."
                 
             df = self.indicators
+            
+            # GMGN.ai PRO Dark Theme 配色
+            BG_COLOR = '#0d0d0d'          # 主背景色
+            BG_CHART = '#141414'          # 图表背景
+            GRID_COLOR = '#2a2a2a'        # 网格线
+            TEXT_COLOR = '#9ca3af'        # 文字颜色
+            TEXT_PRIMARY = '#e5e5e5'      # 主要文字
+            
+            # 线条配色 - 专业交易风格
+            PRICE_COLOR = '#f59e0b'       # 当前价格 - 橙黄色（醒目）
+            MA2_COLOR = '#e5e5e5'         # 中线 - 白色
+            MA3_COLOR = '#4ade80'         # 上涨线 - 浅绿
+            MA4_COLOR = '#22c55e'         # 强势线 - 深绿
+            MA5_COLOR = '#f87171'         # 下跌线 - 浅红
+            MA6_COLOR = '#ef4444'         # 超跌线 - 深红
+            
+            # MACD 配色
+            MACD_COLOR = '#3b82f6'        # MACD线 - 蓝色
+            SIGNAL_COLOR = '#a855f7'      # 信号线 - 紫色
+            HIST_UP = '#22c55e'           # 柱状图上涨 - 绿色
+            HIST_DOWN = '#ef4444'         # 柱状图下跌 - 红色
+            
             fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(13, 8), gridspec_kw={'height_ratios': [3, 1]})
-            plt.style.use('dark_background')  # 使用暗色主题，更符合加密货币风格
+            plt.style.use('dark_background')
 
             # 绘制MA1到MA6
-            ax1.plot(df['MA1'], label='Current Price', color='#00FFFF', linewidth=2)  # 青色-当前价格
-            ax1.plot(df['MA2'], label='中线', color='#FFFFFF')              # 白色-中线
-            ax1.plot(df['MA3'], label='上涨线', color='#90EE90')            # 浅绿-上涨线（浅）
-            ax1.plot(df['MA4'], label='强势线', color='#228B22')            # 深绿-强势线（深）
-            ax1.plot(df['MA5'], label='下跌线', color='#FF6B6B', linestyle='--')  # 浅红-下跌线（浅）
-            ax1.plot(df['MA6'], label='超跌线', color='#DC143C', linestyle='--')  # 深红-超跌线（深）
+            ax1.plot(df['MA1'], label='Current Price', color=PRICE_COLOR, linewidth=2)
+            ax1.plot(df['MA2'], label='中线', color=MA2_COLOR, linewidth=1.2)
+            ax1.plot(df['MA3'], label='上涨线', color=MA3_COLOR, linewidth=1.2)
+            ax1.plot(df['MA4'], label='强势线', color=MA4_COLOR, linewidth=1.2)
+            ax1.plot(df['MA5'], label='下跌线', color=MA5_COLOR, linestyle='--', linewidth=1.2)
+            ax1.plot(df['MA6'], label='超跌线', color=MA6_COLOR, linestyle='--', linewidth=1.2)
 
             # 设置日期格式和刻度
-            # 调整为每50个点取一个刻度，避免过多刻度导致的显示问题
             ax1.set_xticks(df.index[::50])  
             ax1.tick_params(axis='x', rotation=45)
-            ax1.tick_params(colors='#00FF00')  # 绿色坐标轴文字
+            ax1.tick_params(colors=TEXT_COLOR)
             
-            # 尝试使用日期格式化器，如果索引是日期时间类型
+            # 尝试使用日期格式化器
             try:
                 ax1.xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m-%d'))
             except:
@@ -341,52 +362,68 @@ class KlineBot:
                 
             ax1.xaxis.set_visible(False)
 
-            # 添加生成时间到标题，使用UTC+8小时作为北京时间
+            # 添加生成时间到标题
             beijing_time = datetime.datetime.utcnow() + datetime.timedelta(hours=8)
             formatted_time = beijing_time.strftime('%Y-%m-%d %H:%M:%S')
-            ax1.set_title(f'{self.symbol} Moving Averages - Last Update: {formatted_time}', color='#00FF00', fontsize=16)
-            ax1.set_ylabel('Price', color='#00FF00')
-            ax1.legend()
+            ax1.set_title(f'{self.symbol} Moving Averages - Last Update: {formatted_time}', color=TEXT_PRIMARY, fontsize=16)
+            ax1.set_ylabel('Price', color=TEXT_COLOR)
             
-            # 像素风格化：网格和背景
-            ax1.grid(True, linestyle='--', alpha=0.3, color='#4B0082')
-            ax1.set_facecolor('#000033')  # 深蓝背景
+            # 图例样式
+            legend1 = ax1.legend(facecolor=BG_CHART, edgecolor=GRID_COLOR, labelcolor=TEXT_COLOR)
+            legend1.get_frame().set_alpha(0.9)
+            
+            # 网格和背景
+            ax1.grid(True, linestyle='-', alpha=0.3, color=GRID_COLOR)
+            ax1.set_facecolor(BG_CHART)
+            
+            # 设置边框颜色
+            for spine in ax1.spines.values():
+                spine.set_color(GRID_COLOR)
             
             # 添加当前价格标注
             current_price = df['Close'].iloc[-1]
             ax1.text(df.index[-1], current_price, f"  {current_price:.2f}", 
-                    color='#00FFFF', fontweight='bold', verticalalignment='center')
+                    color=PRICE_COLOR, fontweight='bold', verticalalignment='center')
             
             # 绘制MACD和信号线
-            ax2.plot(df.index, df['MACD'], label='MACD', color='#00FFFF', linewidth=1.5)
-            ax2.plot(df.index, df['Signal Line'], label='Signal', color='#FF00FF', linewidth=1.5)
+            ax2.plot(df.index, df['MACD'], label='MACD', color=MACD_COLOR, linewidth=1.5)
+            ax2.plot(df.index, df['Signal Line'], label='Signal', color=SIGNAL_COLOR, linewidth=1.5)
 
             # 绘制MACD柱状图
-            colors = ['#00FF00' if val >= 0 else '#FF0000' for val in df['MACD Histogram']]
-            ax2.bar(df.index, df['MACD Histogram'], color=colors, width=0.7, alpha=0.7)
+            colors = [HIST_UP if val >= 0 else HIST_DOWN for val in df['MACD Histogram']]
+            ax2.bar(df.index, df['MACD Histogram'], color=colors, width=0.7, alpha=0.8)
 
             # 设置日期格式和刻度
             ax2.set_xticks(df.index[::50])
-            ax2.tick_params(axis='x', rotation=45, colors='#00FF00')
+            ax2.tick_params(axis='x', rotation=45, colors=TEXT_COLOR)
+            ax2.tick_params(axis='y', colors=TEXT_COLOR)
             
-            # 尝试使用日期格式化器，如果索引是日期时间类型
+            # 尝试使用日期格式化器
             try:
                 ax2.xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m-%d'))
             except:
                 pass
                 
-            ax2.set_xlabel('Date', color='#00FF00')
-            ax2.set_ylabel('MACD', color='#00FF00')
-            ax2.legend(facecolor='#000033', edgecolor='#32CD32')
-            ax2.grid(True, linestyle='--', alpha=0.3, color='#4B0082')
-            ax2.set_facecolor('#000033')
+            ax2.set_xlabel('Date', color=TEXT_COLOR)
+            ax2.set_ylabel('MACD', color=TEXT_COLOR)
+            
+            # 图例样式
+            legend2 = ax2.legend(facecolor=BG_CHART, edgecolor=GRID_COLOR, labelcolor=TEXT_COLOR)
+            legend2.get_frame().set_alpha(0.9)
+            
+            ax2.grid(True, linestyle='-', alpha=0.3, color=GRID_COLOR)
+            ax2.set_facecolor(BG_CHART)
+            
+            # 设置边框颜色
+            for spine in ax2.spines.values():
+                spine.set_color(GRID_COLOR)
 
-            fig.patch.set_facecolor('#000033')
+            fig.patch.set_facecolor(BG_COLOR)
             plt.tight_layout()
             
             # 转换为base64编码的图像
             buf = io.BytesIO()
-            plt.savefig(buf, format='png', facecolor='#000033', dpi=100)
+            plt.savefig(buf, format='png', facecolor=BG_COLOR, dpi=100)
             buf.seek(0)
             img_str = base64.b64encode(buf.read()).decode('utf-8')
             plt.close(fig)
