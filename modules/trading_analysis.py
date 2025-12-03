@@ -408,16 +408,16 @@ class KlineBot:
             HIST_UP = '#22c55e'           # 柱状图上涨 - 绿色
             HIST_DOWN = '#ef4444'         # 柱状图下跌 - 红色
             
-            fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(13, 8), gridspec_kw={'height_ratios': [3, 1]})
+            fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(18, 8), gridspec_kw={'height_ratios': [3, 1]})
             plt.style.use('dark_background')
 
             # 绘制MA1到MA6
-            ax1.plot(df['MA1'], label='Current Price', color=PRICE_COLOR, linewidth=2)
-            ax1.plot(df['MA2'], label='中线', color=MA2_COLOR, linewidth=1.2)
-            ax1.plot(df['MA3'], label='上涨线', color=MA3_COLOR, linewidth=1.2)
-            ax1.plot(df['MA4'], label='强势线', color=MA4_COLOR, linewidth=1.2)
-            ax1.plot(df['MA5'], label='下跌线', color=MA5_COLOR, linestyle='--', linewidth=1.2)
-            ax1.plot(df['MA6'], label='超跌线', color=MA6_COLOR, linestyle='--', linewidth=1.2)
+            ax1.plot(df['MA1'], label='Current Price', color=PRICE_COLOR, linewidth=1)
+            ax1.plot(df['MA2'], label='中线', color=MA2_COLOR, linewidth=1)
+            ax1.plot(df['MA3'], label='上涨线', color=MA3_COLOR, linewidth=1)
+            ax1.plot(df['MA4'], label='强势线', color=MA4_COLOR, linewidth=1)
+            ax1.plot(df['MA5'], label='下跌线', color=MA5_COLOR, linestyle='--', linewidth=1)
+            ax1.plot(df['MA6'], label='超跌线', color=MA6_COLOR, linestyle='--', linewidth=1)
 
             # 设置日期格式和刻度
             ax1.set_xticks(df.index[::50])  
@@ -456,8 +456,8 @@ class KlineBot:
                     color=PRICE_COLOR, fontweight='bold', verticalalignment='center')
             
             # 绘制MACD和信号线
-            ax2.plot(df.index, df['MACD'], label='MACD', color=MACD_COLOR, linewidth=1.5)
-            ax2.plot(df.index, df['Signal Line'], label='Signal', color=SIGNAL_COLOR, linewidth=1.5)
+            ax2.plot(df.index, df['MACD'], label='MACD', color=MACD_COLOR, linewidth=1)
+            ax2.plot(df.index, df['Signal Line'], label='Signal', color=SIGNAL_COLOR, linewidth=1)
 
             # 绘制MACD柱状图
             colors = [HIST_UP if val >= 0 else HIST_DOWN for val in df['MACD Histogram']]
