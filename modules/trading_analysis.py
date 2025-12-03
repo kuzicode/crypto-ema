@@ -17,7 +17,10 @@ plt.rcParams['axes.unicode_minus'] = False  # 解决负号显示问题
 logger = logging.getLogger(__name__)
 
 # REST API: 币安 API K-line数据 
-def get_klines(symbol, interval, limit=1000):
+def get_klines(symbol, interval, limit=1000, start_time=None, end_time=None):
+    """
+    获取K线数据，单次最多1000条
+    """
     # 使用备用域名列表
     api_urls = [
         "https://api1.binance.com/api/v3/klines",
@@ -29,8 +32,13 @@ def get_klines(symbol, interval, limit=1000):
     params = {
         'symbol': symbol,
         'interval': interval,
-        'limit': limit
+        'limit': min(limit, 1000)  # 币安API单次最多1000条
     }
+    
+    if start_time:
+        params['startTime'] = start_time
+    if end_time:
+        params['endTime'] = end_time
     
     for url in api_urls:
         try:
@@ -67,6 +75,68 @@ def get_klines(symbol, interval, limit=1000):
     logger.error(f"所有API域名都无法访问，请检查网络连接或使用代理")
     return []
 
+
+def get_klines_extended(symbol, interval, total_limit=4000):
+    """
+    分页获取更多K线数据，支持获取超过1000条的历史数据
+    
+    Args:
+        symbol: 交易对符号
+        interval: K线周期
+        total_limit: 总共需要获取的数据条数（默认4000条，4h周期约2年）
+    
+    Returns:
+        list: K线数据列表
+    """
+    all_klines = []
+    end_time = None
+    remaining = total_limit
+    
+    while remaining > 0:
+        batch_size = min(remaining, 1000)
+        klines = get_klines(symbol, interval, limit=batch_size, end_time=end_time)
+        
+        if not klines:
+            break
+            
+        # 如果是第一次请求或者有新数据
+        if klines:
+            # 将数据添加到列表开头（因为我们是从最新往回取）
+            all_klines = klines + all_klines
+            
+            # 获取最早一条数据的开始时间，作为下次请求的结束时间
+            earliest_time = klines[0][0]  # 第一条数据的开始时间
+            end_time = earliest_time - 1  # 减1毫秒，避免重复
+            
+            remaining -= len(klines)
+            
+            # 如果返回的数据少于请求的数量，说明已经没有更多历史数据了
+            if len(klines) < batch_size:
+                logger.info(f"已获取所有可用的 {symbol} 历史数据")
+                break
+                
+            # 避免请求过于频繁
+            time.sleep(0.2)
+        else:
+            break
+    
+    # 去重并按时间排序
+    if all_klines:
+        # 使用开始时间作为key去重
+        seen = set()
+        unique_klines = []
+        for kline in all_klines:
+            if kline[0] not in seen:
+                seen.add(kline[0])
+                unique_klines.append(kline)
+        
+        # 按开始时间排序
+        unique_klines.sort(key=lambda x: x[0])
+        logger.info(f"总共获取 {symbol} K线数据 {len(unique_klines)} 条")
+        return unique_klines
+    
+    return all_klines
+
 # 辅助函数 - 解析币安K线数据的格式
 def parser_klines(kline):
     return {
@@ -97,7 +167,7 @@ class KlineBot:
     def __init__(self, symbol, interval="4h"):
         self.symbol = symbol
         self.interval = interval
-        self.limit = 5000  # 固定为5000，以获取更多的数据点
+        self.limit = 2000  # 4h周期下，4000条约2年数据
         self.data = self.fetch_data()
         if not self.data.empty:
             self.calculate_macd()
@@ -109,8 +179,8 @@ class KlineBot:
         try:
             logger.info(f"正在获取 {self.symbol} 的数据...")
             
-            # Get Data
-            klines = get_klines(self.symbol, self.interval, self.limit)
+            # 使用扩展函数获取更多历史数据
+            klines = get_klines_extended(self.symbol, self.interval, self.limit)
             
             if not klines:
                 logger.error(f"获取 {self.symbol} 的K线数据失败")
