@@ -26,6 +26,7 @@ build/
 .mail_config
 
 # 数据和日志文件
+assets/
 *.log
 mail_alerts.json
 telegram_alert.json

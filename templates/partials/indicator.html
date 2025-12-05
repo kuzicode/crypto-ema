@@ -1,163 +1,163 @@
 <!-- 指标线图页面 -->
 <div id="indicator-page" class="page-content active">
-    <!-- 图表区域 -->
-    <div class="chart-section">
-        <div class="chart-container">
-            <img id="chart-image" style="display: none;">
-            <div class="loading" id="loading" style="display: none;">
-                <i class="fas fa-spinner"></i>
-                <p class="glow">
-                    加载数据中...
-                </p>
-            </div>
-            <div id="initial-message">
-                <p>
-                    选择或搜索加密货币，然后点击生成图表按钮开始
-                </p>
-            </div>
+    <!-- 收藏栏 - 主流币快捷选择 -->
+    <div class="favorites-bar">
+        <div class="favorites-list">
+            <button type="button" class="favorite-btn" data-symbol="BTC">
+                <span class="favorite-icon">₿</span>
+                <span class="favorite-name">BTC</span>
+            </button>
+            <button type="button" class="favorite-btn" data-symbol="ETH">
+                <span class="favorite-icon">Ξ</span>
+                <span class="favorite-name">ETH</span>
+            </button>
+            <button type="button" class="favorite-btn" data-symbol="SOL">
+                <span class="favorite-icon">◎</span>
+                <span class="favorite-name">SOL</span>
+            </button>
+            <button type="button" class="favorite-btn" data-symbol="BNB">
+                <span class="favorite-icon">⬡</span>
+                <span class="favorite-name">BNB</span>
+            </button>
+            <button type="button" class="favorite-btn" data-symbol="XRP">
+                <span class="favorite-icon">✕</span>
+                <span class="favorite-name">XRP</span>
+            </button>
+            <button type="button" class="favorite-btn" data-symbol="DOGE">
+                <span class="favorite-icon">Ð</span>
+                <span class="favorite-name">DOGE</span>
+            </button>
+            <button type="button" class="favorite-btn" data-symbol="UNI">
+                <span class="favorite-icon">🦄</span>
+                <span class="favorite-name">UNI</span>
+            </button>
+            <button type="button" class="favorite-btn" data-symbol="AAVE">
+                <span class="favorite-icon">👻</span>
+                <span class="favorite-name">AAVE</span>
+            </button>
         </div>
     </div>
-    
-    <!-- 控制区域 -->
-    <div class="controls-section">
-        <div class="control-panel">
-            <div class="panel-header">
-                <div class="panel-title">
-                    <i class="fas fa-sliders-h"></i>
-                    控制面板
+
+    <!-- 主内容区 -->
+    <div class="indicator-main">
+        <!-- 图表区域 -->
+        <div class="chart-section">
+            <div class="chart-container">
+                <img id="chart-image" style="display: none;">
+                <div class="loading" id="loading" style="display: none;">
+                    <i class="fas fa-spinner"></i>
+                    <p class="glow">
+                        加载数据中...
+                    </p>
+                </div>
+                <div id="initial-message">
+                    <p>
+                        选择或搜索加密货币，然后点击生成图表按钮开始
+                    </p>
                 </div>
             </div>
-            
-            <form id="chart-form" class="panel-content">
-                <!-- 将盘面趋势移到控制面板标题下方 -->
-                <div class="market-trends-container">
-                    <div class="trends-header">
-                        <h3>
-                            <i class="fas fa-chart-line"></i>
-                            主流币盘面趋势
-                        </h3>
-                        <button type="button" id="refresh-trends-btn" class="refresh-btn tooltip">
-                            <i class="fas fa-sync-alt"></i>
-                            <span class="tooltiptext">
-                                加载盘面趋势
-                            </span>
-                        </button>
+        </div>
+        
+        <!-- 控制区域 -->
+        <div class="controls-section">
+            <div class="control-panel">
+                <div class="panel-header">
+                    <div class="panel-title">
+                        <i class="fas fa-sliders-h"></i>
+                        控制面板
                     </div>
-                    <div id="market-trends" class="market-trends">
-                        <div class="trend-message">
-                            点击刷新按钮加载盘面趋势
+                </div>
+                
+                <form id="chart-form" class="panel-content">
+                    <!-- 搜索框 -->
+                    <div class="form-group">
+                        <label for="symbol"><i class="fas fa-search"></i>
+                            搜索币种 (仅支持已上线币安币种):
+                        </label>
+                        <input type="text" id="symbol" name="symbol" placeholder="BTC, ETH, SOL..." required>
+                    </div>
+                
+                    <!-- 币种分析信息框 -->
+                    <div id="coin-analysis" class="info-card" style="display: none;">
+                        <h3>
+                            币种分析
+                        </h3>
+                        <div class="data-row">
+                            <span class="data-label">
+                                当前价格
+                            </span>
+                            <span class="data-value" id="current-price">--</span>
+                        </div>
+                        <div class="data-row">
+                            <span class="data-label">
+                                <span class="ma-label" style="color: #22c55e;">强势线(MA4)</span>
+                            </span>
+                            <span class="data-value" id="ma4-price">--</span>
+                        </div>
+                        <div class="data-row">
+                            <span class="data-label">
+                                <span class="ma-label" style="color: #4ade80;">上涨线(MA3)</span>
+                            </span>
+                            <span class="data-value" id="ma3-price">--</span>
+                        </div>
+                        <div class="data-row">
+                            <span class="data-label">
+                                <span class="ma-label" style="color: #e5e5e5;">MA趋势线(MA2)</span>
+                            </span>
+                            <span class="data-value" id="ma2-price">--</span>
+                        </div>
+                        <div class="data-row">
+                            <span class="data-label">
+                                <span class="ma-label" style="color: #f87171;">下跌线(MA5)</span>
+                            </span>
+                            <span class="data-value" id="ma5-price">--</span>
+                        </div>
+                        <div class="data-row">
+                            <span class="data-label">
+                                <span class="ma-label" style="color: #ef4444;">超跌线(MA6)</span>
+                            </span>
+                            <span class="data-value" id="ma6-price">--</span>
+                        </div>
+                        <div class="data-row">
+                            <span class="data-label">
+                                市场趋势
+                            </span>
+                            <span class="data-value" id="market-trend">--</span>
+                        </div>
+                        <div class="data-row">
+                            <span class="data-label">
+                                MACD信号
+                            </span>
+                            <span class="data-value" id="macd-signal">--</span>
+                        </div>
+                        <div class="data-row">
+                            <span class="data-label">
+                                操作建议
+                            </span>
+                            <span class="data-value advice-text" id="trading-advice">--</span>
                         </div>
                     </div>
-                </div>
-                
-                <!-- 将quick-symbols重命名为"主流币种选择"并放在搜索币种上方 -->
-                <div class="form-group">
-                    <label for="quick-symbols">
-                        <i class="fas fa-star"></i>
-                        主流币:
-                    </label>
-                    <div class="quick-symbols">
-                        <button type="button" class="pixel-btn" data-symbol="BTC">BTC</button>
-                        <button type="button" class="pixel-btn" data-symbol="ETH">ETH</button>
-                        <button type="button" class="pixel-btn" data-symbol="SOL">SOL</button>
-                        <button type="button" class="pixel-btn" data-symbol="BNB">BNB</button>
-                        <button type="button" class="pixel-btn" data-symbol="XRP">XRP</button>
-                        <button type="button" class="pixel-btn" data-symbol="DOGE">DOGE</button>
-                        <button type="button" class="pixel-btn" data-symbol="UNI">UNI</button>
-                        <button type="button" class="pixel-btn" data-symbol="AAVE">AAVE</button>
-                        <button type="button" class="pixel-btn" data-symbol="PENDLE">PENDLE</button>
-                        <button type="button" class="pixel-btn" data-symbol="PEPE">PEPE</button>
-                        <button type="button" class="pixel-btn" data-symbol="PENGU">PENGU</button>
+                    
+                    <!-- 盘面趋势 -->
+                    <div class="market-trends-container">
+                        <div class="trends-header">
+                            <h3>
+                                <i class="fas fa-chart-line"></i>
+                                主流币盘面趋势
+                            </h3>
+                            <button type="button" id="refresh-trends-btn" class="refresh-btn tooltip">
+                                <i class="fas fa-sync-alt"></i>
+                                <span class="tooltiptext">
+                                    加载盘面趋势
+                                </span>
+                            </button>
+                        </div>
+                        <div id="market-trends" class="market-trends">
+                            <div class="trend-message">
+                                点击刷新按钮加载盘面趋势
+                            </div>
+                        </div>
                     </div>
-                </div>
-                
-                <div class="form-group">
-                    <label for="symbol"><i class="fas fa-search"></i>
-                        搜索币种 (仅支持已上线币安币种):
-                    </label>
-                    <input type="text" id="symbol" name="symbol" placeholder="BTC, ETH, SOL..." required>
-                </div>
-                
-                <!-- 整合市场信息和市场分析为一个"币种分析"信息框 -->
-                <div id="coin-analysis" class="info-card" style="display: none; margin-top: 5px;">
-                    <h3>
-                        币种分析
-                    </h3>
-                    <div class="data-row">
-                        <span class="data-label">
-                            当前价格
-                        </span>
-                        <span class="data-value" id="current-price">--</span>
-                    </div>
-                    <!-- 添加MA线的价格显示 -->
-                    <div class="data-row">
-                        <span class="data-label">
-                            <span class="ma-label" style="color: #228B22;">强势线(MA4)</span>
-                        </span>
-                        <span class="data-value" id="ma4-price">--</span>
-                    </div>
-                    <div class="data-row">
-                        <span class="data-label">
-                            <span class="ma-label" style="color: #90EE90;">上涨线(MA3)</span>
-                        </span>
-                        <span class="data-value" id="ma3-price">--</span>
-                    </div>
-                    <div class="data-row">
-                        <span class="data-label">
-                            <span class="ma-label" style="color: #FFFFFF;">MA趋势线(MA2)</span>
-                        </span>
-                        <span class="data-value" id="ma2-price">--</span>
-                    </div>
-                    <div class="data-row">
-                        <span class="data-label">
-                            <span class="ma-label" style="color: #FF6B6B;">下跌线(MA5)</span>
-                        </span>
-                        <span class="data-value" id="ma5-price">--</span>
-                    </div>
-                    <div class="data-row">
-                        <span class="data-label">
-                            <span class="ma-label" style="color: #DC143C;">超跌线(MA6)</span>
-                        </span>
-                        <span class="data-value" id="ma6-price">--</span>
-                    </div>
-                    <div class="data-row">
-                        <span class="data-label">
-                            市场趋势
-                        </span>
-                        <span class="data-value" id="market-trend">--</span>
-                    </div>
-                    <div class="data-row">
-                        <span class="data-label">
-                            MACD信号
-                        </span>
-                        <span class="data-value" id="macd-signal">--</span>
-                    </div>
-                    <div class="data-row">
-                        <span class="data-label">
-                            风险等级
-                        </span>
-                        <span class="data-value" id="risk-level">--</span>
-                    </div>
-                    <div class="data-row">
-                        <span class="data-label">
-                            支撑位
-                        </span>
-                        <span class="data-value" id="support-level">--</span>
-                    </div>
-                    <div class="data-row">
-                        <span class="data-label">
-                            阻力位
-                        </span>
-                        <span class="data-value" id="resistance-level">--</span>
-                    </div>
-                    <!-- 添加操作建议 -->
-                    <div class="data-row">
-                        <span class="data-label">
-                            操作建议
-                        </span>
-                        <span class="data-value advice-text" id="trading-advice">--</span>
-                    </div>
-                </div>
                 
                 <!-- 将状态消息移动到生成按钮上方 -->
                 <div class="status-container">
@@ -170,5 +170,6 @@
                 </button>
             </form>
         </div>
+    </div>
     </div>
 </div> 

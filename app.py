@@ -18,7 +18,7 @@ try:
     time.tzset()  # 在某些平台上可能不支持
     logger.info(f"系统时区已设置为: {time.tzname}")
 except AttributeError:
-    logger.info("此平台不支持tzset函数，时区设置可能无效")
+    logger.info("此平台不支持tzset函数, 时区设置可能无效")
 
 def create_app():
     """创建并配置Flask应用"""

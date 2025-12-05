@@ -40,6 +40,7 @@
         const status = document.getElementById('status');
         const initialMessage = document.getElementById('initial-message');
         const quickButtons = document.querySelectorAll('.pixel-btn');
+        const favoriteButtons = document.querySelectorAll('.favorite-btn');
         const generateBtn = document.getElementById('generate-btn');
         const symbolInput = document.getElementById('symbol');
         
@@ -89,6 +90,9 @@
         // 高亮活动币种
         const highlightActiveSymbol = (symbol) => {
             quickButtons.forEach(btn => {
+                btn.classList.toggle('active', btn.getAttribute('data-symbol') === symbol);
+            });
+            favoriteButtons.forEach(btn => {
                 btn.classList.toggle('active', btn.getAttribute('data-symbol') === symbol);
             });
         };
@@ -180,25 +184,22 @@
                     if (data.analysis) {
                         document.getElementById('market-trend').textContent = data.analysis.trend;
                         document.getElementById('macd-signal').textContent = data.analysis.signal_type;
-                        document.getElementById('risk-level').textContent = data.analysis.risk_level;
-                        document.getElementById('support-level').textContent = data.analysis.support.toFixed(2);
-                        document.getElementById('resistance-level').textContent = data.analysis.resistance.toFixed(2);
                         
                         // 添加操作建议
                         const adviceElement = document.getElementById('trading-advice');
                         adviceElement.textContent = data.analysis.trading_advice;
                         
-                        // 根据建议内容设置颜色
+                        // 根据建议内容设置颜色 - GMGN PRO Dark Theme
                         if (data.analysis.trading_advice.includes('买入') || 
                             data.analysis.trading_advice.includes('上涨')) {
-                            adviceElement.style.color = '#00FF00'; // 绿色
+                            adviceElement.style.color = '#22c55e'; // 绿色
                         } else if (data.analysis.trading_advice.includes('卖出') || 
                                   data.analysis.trading_advice.includes('下跌')) {
-                            adviceElement.style.color = '#FF4500'; // 红色
+                            adviceElement.style.color = '#ef4444'; // 红色
                         } else if (data.analysis.trading_advice.includes('观望')) {
-                            adviceElement.style.color = '#FFFF00'; // 黄色
+                            adviceElement.style.color = '#eab308'; // 黄色
                         } else if (data.analysis.trading_advice.includes('谨慎')) {
-                            adviceElement.style.color = '#FFA500'; // 橙色
+                            adviceElement.style.color = '#f97316'; // 橙色
                         }
                         
                         // 显示币种分析信息框
@@ -229,8 +230,20 @@
         
         // 事件监听器
         
-        // 快速选择按钮
+        // 快速选择按钮（右侧面板 - 已移除，保留兼容性）
         quickButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const symbol = this.getAttribute('data-symbol');
+                symbolInput.value = symbol;
+                currentState.symbol = symbol;
+                highlightActiveSymbol(symbol);
+                saveUserPreferences();
+                fetchChartData();
+            });
+        });
+        
+        // 收藏栏按钮
+        favoriteButtons.forEach(button => {
             button.addEventListener('click', function() {
                 const symbol = this.getAttribute('data-symbol');
                 symbolInput.value = symbol;
@@ -279,8 +292,8 @@
                 </div>
             `;
             
-            // 获取所有快速选择币种的按钮
-            const symbolButtons = document.querySelectorAll('.pixel-btn');
+            // 获取所有收藏栏币种
+            const symbolButtons = document.querySelectorAll('.favorite-btn');
             const symbols = Array.from(symbolButtons).map(btn => btn.getAttribute('data-symbol'));
             
             // 发送请求

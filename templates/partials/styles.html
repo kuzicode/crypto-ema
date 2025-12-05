@@ -1,17 +1,38 @@
 <style>
-    /* 添加字体链接 */
-    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700&family=Rajdhani:wght@500;700&family=Audiowide&display=swap');
+    /* GMGN.ai PRO Dark Theme - Professional Crypto Trading Style */
     
     :root {
-        --bg-color: #000033;
-        --text-color: #00FF00;
-        --accent-color: #00FFFF;
-        --accent2-color: #FF00FF;
-        --grid-color: #4B0082;
-        --card-bg: #000044;
-        --button-bg: #003366;
-        --button-hover: #0066CC;
-        --light-blue: #87CEFA; /* 添加浅蓝色变量 */
+        /* 主色调 - 深黑色系 */
+        --bg-color: #0d0d0d;
+        --bg-secondary: #141414;
+        --bg-tertiary: #1a1a1a;
+        --bg-card: #1e1e1e;
+        --bg-hover: #252525;
+        
+        /* 边框色 */
+        --border-color: #2a2a2a;
+        --border-light: #333333;
+        
+        /* 文字颜色 */
+        --text-primary: #e5e5e5;
+        --text-secondary: #9ca3af;
+        --text-muted: #6b7280;
+        
+        /* 强调色 */
+        --accent-color: #e5e5e5;
+        --accent2-color: #9ca3af;
+        
+        /* 功能色 */
+        --green-primary: #22c55e;
+        --green-light: #4ade80;
+        --red-primary: #ef4444;
+        --red-light: #f87171;
+        --yellow-primary: #eab308;
+        
+        /* 按钮色 */
+        --button-bg: #262626;
+        --button-hover: #333333;
+        --button-active: #404040;
     }
     
     * {
@@ -23,14 +44,10 @@
     body {
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
         background-color: var(--bg-color);
-        color: var(--text-color);
+        color: var(--text-primary);
         line-height: 1.6;
         padding: 10px;
         font-size: 14px;
-        background-image: 
-            linear-gradient(rgba(0, 255, 0, 0.1) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(0, 255, 0, 0.1) 1px, transparent 1px);
-        background-size: 20px 20px;
         height: 100vh;
         overflow: hidden;
     }
@@ -47,9 +64,8 @@
     .header {
         text-align: left;
         margin-bottom: 10px;
-        border-bottom: 1px solid var(--grid-color);
+        border-bottom: 1px solid var(--border-color);
         padding-bottom: 8px;
-        text-shadow: 0 0 10px var(--accent-color);
         position: relative;
     }
     
@@ -70,22 +86,17 @@
         width: 30px;
         height: 30px;
         object-fit: contain;
-        filter: drop-shadow(0 0 3px rgba(255, 255, 255, 0.5));
         flex-shrink: 0;
-        margin-right: 5px; /* 增加logo与文字的间距 */
+        margin-right: 5px;
     }
     
     .brand-name {
-        font-size: 22px; /* 增大字体大小 */
+        font-size: 22px;
         color: #FFFFFF;
-        font-weight: 700; /* 加粗字体 */
-        letter-spacing: 2px; /* 增加字间距 */
-        text-transform: uppercase; /* 转为大写 */
-        font-family: 'Orbitron', 'Rajdhani', 'Audiowide', sans-serif; /* 使用更科技感的字体 */
-        text-shadow: 0 0 10px rgba(0, 255, 255, 0.7), 0 0 20px rgba(0, 255, 255, 0.4); /* 增强发光效果 */
-        background: linear-gradient(to right, #FFFFFF, #00FFFF); /* 添加渐变色 */
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
+        font-weight: 700;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
         position: relative;
         padding: 0 5px;
     }
@@ -97,22 +108,22 @@
     }
     
     .nav-item {
-        color: var(--light-blue); /* 将默认颜色改为浅蓝色 */
+        color: var(--text-secondary);
         font-size: 16px;
         text-decoration: none;
         padding: 5px 10px;
         border-radius: 4px;
-        transition: all 0.3s;
+        transition: all 0.2s ease;
     }
     
     .nav-item:hover {
-        color: var(--accent-color);
-        text-shadow: 0 0 5px var(--accent-color);
+        color: var(--text-primary);
+        background-color: var(--bg-hover);
     }
     
     .nav-item.active {
-        color: var(--accent-color);
-        text-shadow: 0 0 8px var(--accent-color);
+        color: var(--text-primary);
+        background-color: var(--bg-tertiary);
         font-weight: 500;
     }
     
@@ -128,8 +139,73 @@
     
     .page-content.active {
         display: flex;
+        flex-direction: column;
         flex: 1;
-        gap: 10px;
+        gap: 8px;
+    }
+    
+    /* 收藏栏样式 - GMGN Style */
+    .favorites-bar {
+        background-color: var(--bg-secondary);
+        border-bottom: 1px solid var(--border-color);
+        padding: 4px 10px;
+        flex-shrink: 0;
+    }
+    
+    .favorites-list {
+        display: flex;
+        align-items: center;
+        gap: 2px;
+        overflow-x: auto;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+    }
+    
+    .favorites-list::-webkit-scrollbar {
+        display: none;
+    }
+    
+    .favorite-btn {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        background-color: transparent;
+        border: none;
+        padding: 4px 8px;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: all 0.15s ease;
+        white-space: nowrap;
+        color: var(--text-secondary);
+    }
+    
+    .favorite-btn:hover {
+        background-color: var(--bg-hover);
+        color: var(--text-primary);
+    }
+    
+    .favorite-btn.active {
+        background-color: var(--bg-tertiary);
+        color: var(--text-primary);
+    }
+    
+    .favorite-icon {
+        font-size: 11px;
+        width: 14px;
+        text-align: center;
+    }
+    
+    .favorite-name {
+        font-size: 11px;
+        font-weight: 500;
+    }
+    
+    /* 指标页面主内容区 */
+    .indicator-main {
+        display: flex;
+        flex: 1;
+        gap: 8px;
+        overflow: hidden;
     }
     
     /* Coming Soon 页面 */
@@ -140,18 +216,17 @@
         align-items: center;
         height: 100%;
         width: 100%;
-        background-color: var(--card-bg);
-        border: 2px solid var(--accent-color);
+        background-color: var(--bg-card);
+        border: 1px solid var(--border-color);
         border-radius: 8px;
         padding: 40px;
-        box-shadow: 0 0 15px rgba(0, 255, 255, 0.3);
-        color: var(--accent-color);
+        color: var(--text-secondary);
     }
     
     .coming-soon h2 {
         font-size: 36px;
         margin-bottom: 20px;
-        text-shadow: 0 0 15px var(--accent-color);
+        color: var(--text-primary);
     }
     
     .coming-soon p {
@@ -163,33 +238,31 @@
     .main-content {
         display: flex;
         flex: 1;
-        gap: 10px;
+        gap: 8px;
         overflow: hidden;
     }
     
     /* 图表区域 */
     .chart-section {
-        flex: 80;
+        flex: 1;
         min-width: 0;
         overflow: hidden;
     }
     
     /* 控制区域 */
     .controls-section {
-        flex: 20;
-        min-width: 250px;
-        max-width: 350px;
+        flex: 0 0 280px;
+        width: 280px;
         overflow-y: auto;
         overflow-x: hidden;
     }
     
     /* 控制面板 */
     .control-panel {
-        background-color: var(--card-bg);
-        border: 2px solid var(--accent-color);
+        background-color: var(--bg-card);
+        border: 1px solid var(--border-color);
         border-radius: 8px;
-        padding: 12px;
-        box-shadow: 0 0 15px rgba(0, 255, 255, 0.3);
+        padding: 10px;
         height: 100%;
         display: flex;
         flex-direction: column;
@@ -198,21 +271,21 @@
     }
     
     .panel-header {
-        border-bottom: 1px dashed var(--text-color);
-        padding-bottom: 8px;
-        margin-bottom: 10px;
+        border-bottom: 1px solid var(--border-color);
+        padding-bottom: 6px;
+        margin-bottom: 8px;
     }
     
     .panel-title {
         font-size: 15px;
-        color: var(--accent-color);
+        color: var(--text-primary);
         display: flex;
         align-items: center;
         gap: 5px;
     }
     
     .status {
-        color: var(--accent-color);
+        color: var(--text-secondary);
         font-size: 12px;
         height: 15px;
         margin-top: 5px;
@@ -226,7 +299,7 @@
     }
     
     .error {
-        color: #FF0000;
+        color: var(--red-primary);
     }
     
     .panel-content {
@@ -246,27 +319,26 @@
     
     .pixel-btn {
         background-color: var(--button-bg);
-        color: var(--accent-color);
-        border: none;
+        color: var(--text-primary);
+        border: 1px solid var(--border-light);
         padding: 4px 8px;
         margin-bottom: 4px;
         font-size: 12px;
         cursor: pointer;
         position: relative;
-        clip-path: polygon(
-            0% 0%, 95% 0%, 100% 5%, 100% 100%, 5% 100%, 0% 95%
-        );
-        transition: background-color 0.2s, transform 0.2s;
+        border-radius: 4px;
+        transition: all 0.2s ease;
     }
     
     .pixel-btn:hover {
         background-color: var(--button-hover);
-        transform: translateY(-2px);
+        border-color: var(--text-muted);
     }
     
     .pixel-btn.active {
-        background-color: var(--button-hover);
-        box-shadow: 0 0 10px var(--accent-color);
+        background-color: var(--button-active);
+        border-color: var(--green-primary);
+        color: var(--green-primary);
     }
     
     /* 表单样式 */
@@ -277,7 +349,7 @@
     .form-group label {
         display: block;
         margin-bottom: 5px;
-        color: var(--text-color);
+        color: var(--text-secondary);
         font-size: 12px;
     }
     
@@ -285,23 +357,30 @@
     .form-group select {
         width: 100%;
         padding: 6px 8px;
-        background-color: var(--bg-color);
-        color: var(--accent-color);
-        border: 1px solid var(--text-color);
+        background-color: var(--bg-secondary);
+        color: var(--text-primary);
+        border: 1px solid var(--border-color);
         border-radius: 4px;
         font-size: 13px;
+        transition: border-color 0.2s ease;
+    }
+    
+    .form-group input:focus, 
+    .form-group select:focus {
+        outline: none;
+        border-color: var(--text-muted);
     }
     
     /* 生成按钮 */
     .generate-btn {
-        background-color: var(--button-bg);
-        color: var(--accent-color);
-        border: 2px solid var(--accent-color);
+        background-color: var(--green-primary);
+        color: #000000;
+        border: none;
         padding: 7px 14px;
         cursor: pointer;
         font-size: 13px;
         border-radius: 4px;
-        transition: all 0.3s;
+        transition: all 0.2s ease;
         text-transform: uppercase;
         width: 100%;
         display: flex;
@@ -309,18 +388,17 @@
         align-items: center;
         gap: 5px;
         margin-top: auto;
+        font-weight: 600;
     }
     
     .generate-btn:hover {
-        background-color: var(--button-hover);
-        box-shadow: 0 0 10px var(--accent-color);
-        transform: translateY(-2px);
+        background-color: var(--green-light);
     }
     
     /* 图表容器 */
     .chart-container {
-        background-color: var(--bg-color);
-        border: 2px solid var(--accent-color);
+        background-color: var(--bg-secondary);
+        border: 1px solid var(--border-color);
         border-radius: 8px;
         padding: 15px;
         height: 100%;
@@ -344,7 +422,7 @@
         top: 50%;
         left: 50%;
         transform: translate(-50%, -50%);
-        color: var(--accent-color);
+        color: var(--text-secondary);
         text-align: center;
     }
     
@@ -361,18 +439,18 @@
     
     /* 市场信息卡片 */
     .info-card {
-        background-color: rgba(0, 0, 68, 0.7);
-        border: 1px solid var(--accent-color);
+        background-color: var(--bg-tertiary);
+        border: 1px solid var(--border-color);
         border-radius: 4px;
         padding: 8px;
         font-size: 11px;
     }
     
     .info-card h3 {
-        color: var(--accent-color);
+        color: var(--text-primary);
         font-size: 14px;
         margin-bottom: 5px;
-        border-bottom: 1px dashed var(--text-color);
+        border-bottom: 1px solid var(--border-color);
         padding-bottom: 4px;
         display: flex;
         align-items: center;
@@ -385,8 +463,12 @@
         margin-bottom: 3px;
     }
     
+    .info-card .data-row span:first-child {
+        color: var(--text-secondary);
+    }
+    
     .info-card .data-value {
-        color: var(--accent-color);
+        color: var(--text-primary);
         font-weight: bold;
     }
     
@@ -399,24 +481,14 @@
         text-align: center;
         margin-top: 10px;
         font-size: 10px;
-        color: var(--grid-color);
-        border-top: 1px solid var(--grid-color);
+        color: var(--text-muted);
+        border-top: 1px solid var(--border-color);
         padding-top: 10px;
     }
     
-    /* CRT效果 */
+    /* CRT效果 - 禁用 */
     .crt-effect {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%);
-        background-size: 100% 4px;
-        z-index: 1000;
-        pointer-events: none;
-        mix-blend-mode: overlay;
-        opacity: 0.15;
+        display: none;
     }
     
     /* 提示框 */
@@ -428,10 +500,10 @@
     .tooltip .tooltiptext {
         visibility: hidden;
         width: 120px;
-        background-color: var(--card-bg);
-        color: var(--text-color);
+        background-color: var(--bg-card);
+        color: var(--text-primary);
         text-align: center;
-        border: 1px solid var(--accent-color);
+        border: 1px solid var(--border-color);
         border-radius: 4px;
         padding: 5px;
         position: absolute;
@@ -440,7 +512,7 @@
         left: 50%;
         margin-left: -60px;
         opacity: 0;
-        transition: opacity 0.3s;
+        transition: opacity 0.2s ease;
         font-size: 10px;
     }
     
@@ -449,18 +521,9 @@
         opacity: 1;
     }
     
-    /* 发光动画 */
+    /* 发光动画 - 禁用，改为简单的过渡 */
     .glow {
-        animation: glow 1.5s ease-in-out infinite alternate;
-    }
-    
-    @keyframes glow {
-        from {
-            text-shadow: 0 0 5px var(--accent-color), 0 0 10px var(--accent-color);
-        }
-        to {
-            text-shadow: 0 0 10px var(--accent-color), 0 0 20px var(--accent-color), 0 0 30px var(--accent-color);
-        }
+        transition: color 0.2s ease;
     }
     
     /* 响应式设计 */
@@ -475,7 +538,8 @@
             overflow: visible;
         }
         
-        .main-content {
+        .main-content,
+        .indicator-main {
             flex-direction: column-reverse;
             overflow: visible;
         }
@@ -489,19 +553,30 @@
             flex: initial;
             max-width: 100%;
         }
+        
+        .favorites-bar {
+            overflow-x: auto;
+        }
+        
+        .favorite-btn {
+            padding: 4px 8px;
+        }
+        
+        .favorite-name {
+            font-size: 12px;
+        }
     }
     
     /* 添加操作建议的样式 */
     .advice-text {
         font-weight: bold;
-        color: #FFFF00; /* 默认黄色 */
-        text-shadow: 0 0 5px rgba(255, 255, 0, 0.5);
+        color: var(--yellow-primary);
     }
     
     /* 添加盘面趋势样式 */
     .market-trends-container {
-        background-color: var(--card-bg);
-        border: 1px solid var(--accent-color);
+        background-color: var(--bg-tertiary);
+        border: 1px solid var(--border-color);
         border-radius: 4px;
         padding: 8px;
         margin: 10px 0;
@@ -518,48 +593,48 @@
     
     .trend-title {
         font-weight: bold;
-        color: var(--accent-color);
+        color: var(--text-primary);
     }
     
     .trend-symbols {
-        color: var(--text-color);
+        color: var(--text-secondary);
     }
     
     .trend-count {
-        color: #FFFF00;
+        color: var(--yellow-primary);
     }
     
     .trend-dark-green {
-        color: #228B22;
+        color: #16a34a;
     }
     
     .trend-light-green {
-        color: #90EE90;
+        color: #4ade80;
     }
     
     .trend-neutral {
-        color: #00FFFF;
+        color: var(--text-secondary);
     }
     
     .trend-neutral-up {
-        color: #00FFAA;
+        color: #86efac;
     }
     
     .trend-neutral-down {
-        color: #00AAFF;
+        color: #fca5a5;
     }
     
     .trend-light-red {
-        color: #FF6B6B;
+        color: #f87171;
     }
     
     .trend-dark-red {
-        color: #DC143C;
+        color: #dc2626;
     }
     
     .loading-trends {
         font-style: italic;
-        color: var(--accent-color);
+        color: var(--text-secondary);
         text-align: center;
     }
     
@@ -572,7 +647,7 @@
     
     .trends-header h3 {
         font-size: 14px;
-        color: var(--accent-color);
+        color: var(--text-primary);
         margin: 0;
         display: flex;
         align-items: center;
@@ -581,18 +656,18 @@
     
     .refresh-btn {
         background-color: var(--button-bg);
-        color: var(--accent-color);
-        border: 1px solid var(--accent-color);
+        color: var(--text-secondary);
+        border: 1px solid var(--border-color);
         border-radius: 4px;
         padding: 2px 6px;
         font-size: 10px;
         cursor: pointer;
-        transition: all 0.2s;
+        transition: all 0.2s ease;
     }
     
     .refresh-btn:hover {
         background-color: var(--button-hover);
-        box-shadow: 0 0 5px var(--accent-color);
+        color: var(--text-primary);
     }
     
     .refresh-btn i {
@@ -601,7 +676,7 @@
     
     .trend-message {
         text-align: center;
-        color: var(--text-color);
+        color: var(--text-secondary);
         font-style: italic;
         font-size: 10px;
     }
@@ -619,8 +694,8 @@
     }
     
     .alert-container {
-        background-color: var(--bg-color);
-        border: 2px solid var(--accent-color);
+        background-color: var(--bg-secondary);
+        border: 1px solid var(--border-color);
         border-radius: 8px;
         padding: 15px;
         height: 100%;
@@ -634,19 +709,18 @@
         display: flex;
         justify-content: space-between;
         align-items: center;
-        border-bottom: 1px solid var(--grid-color);
+        border-bottom: 1px solid var(--border-color);
         padding-bottom: 10px;
         margin-bottom: 15px;
     }
     
     .alert-title {
-        color: var(--accent-color);
+        color: var(--text-primary);
         font-size: 20px;
         margin: 0;
         display: flex;
         align-items: center;
         gap: 10px;
-        text-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
     }
     
     .alert-actions {
@@ -662,7 +736,7 @@
     
     .no-alerts {
         text-align: center;
-        color: var(--text-color);
+        color: var(--text-secondary);
         font-style: italic;
         margin-top: 20px;
     }
@@ -674,20 +748,20 @@
     }
     
     .alert-item {
-        background-color: rgba(0, 0, 68, 0.7);
-        border: 1px solid var(--accent-color);
+        background-color: var(--bg-tertiary);
+        border: 1px solid var(--border-color);
         border-radius: 6px;
         padding: 12px;
-        transition: all 0.3s;
+        transition: all 0.2s ease;
     }
     
     .alert-item:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
+        background-color: var(--bg-hover);
+        border-color: var(--border-light);
     }
     
     .alert-time {
-        color: var(--accent2-color);
+        color: var(--text-muted);
         font-size: 12px;
         margin-bottom: 8px;
         display: flex;
@@ -697,7 +771,7 @@
     
     .alert-badge {
         background-color: var(--button-bg);
-        color: var(--accent-color);
+        color: var(--text-secondary);
         padding: 2px 6px;
         border-radius: 4px;
         font-size: 10px;
@@ -705,9 +779,8 @@
     }
     
     .latest-badge {
-        background-color: rgba(255, 0, 255, 0.4);
-        color: #FFFFFF;
-        text-shadow: 0 0 5px rgba(255, 255, 255, 0.5);
+        background-color: var(--green-primary);
+        color: #000000;
     }
     
     .alert-tokens {
@@ -720,7 +793,7 @@
         display: flex;
         justify-content: space-between;
         align-items: center;
-        background-color: rgba(0, 0, 40, 0.5);
+        background-color: var(--bg-card);
         padding: 8px 10px;
         border-radius: 4px;
         border-left: 3px solid;
@@ -739,7 +812,7 @@
     }
     
     .token-price {
-        color: var(--text-color);
+        color: var(--text-secondary);
     }
     
     .token-ema {
@@ -748,46 +821,45 @@
         font-size: 11px;
     }
     
-    /* EMA状态颜色（与图表颜色一致） */
+    /* EMA状态颜色 - 专业交易配色 */
     .ema-above-ma4 {
-        color: #228B22;  /* 深绿-强势线 */
-        border-left-color: #228B22;
+        color: #16a34a;
+        border-left-color: #16a34a;
     }
     
     .ema-above-ma3 {
-        color: #90EE90;  /* 浅绿-上涨线 */
-        border-left-color: #90EE90;
+        color: #4ade80;
+        border-left-color: #4ade80;
     }
     
     .ema-between-ma2-ma3 {
-        color: #00FFAA;
-        border-left-color: #00FFAA;
+        color: #86efac;
+        border-left-color: #86efac;
     }
     
     .ema-between-ma5-ma2 {
-        color: #00AAFF;
-        border-left-color: #00AAFF;
+        color: #fca5a5;
+        border-left-color: #fca5a5;
     }
     
     .ema-below-ma5 {
-        color: #FF6B6B;  /* 浅红-下跌线 */
-        border-left-color: #FF6B6B;
+        color: #f87171;
+        border-left-color: #f87171;
     }
     
     .ema-below-ma6 {
-        color: #DC143C;  /* 深红-超跌线 */
-        border-left-color: #DC143C;
+        color: #dc2626;
+        border-left-color: #dc2626;
     }
     
     /* 状态变化高亮样式 */
     .status-changed {
         font-weight: bold;
-        background-color: rgba(255, 255, 0, 0.15);
+        background-color: rgba(234, 179, 8, 0.15);
         padding: 4px 8px;
         border-radius: 4px;
         position: relative;
         animation: pulse 2s infinite;
-        box-shadow: 0 0 8px rgba(255, 255, 0, 0.3);
     }
     
     .status-icon {
@@ -799,13 +871,32 @@
     
     @keyframes pulse {
         0% {
-            box-shadow: 0 0 0 0 rgba(255, 255, 0, 0.4);
+            box-shadow: 0 0 0 0 rgba(234, 179, 8, 0.3);
         }
         70% {
-            box-shadow: 0 0 0 8px rgba(255, 255, 0, 0);
+            box-shadow: 0 0 0 6px rgba(234, 179, 8, 0);
         }
         100% {
-            box-shadow: 0 0 0 0 rgba(255, 255, 0, 0);
+            box-shadow: 0 0 0 0 rgba(234, 179, 8, 0);
         }
+    }
+    
+    /* 滚动条样式 - 专业深色主题 */
+    ::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
+    }
+    
+    ::-webkit-scrollbar-track {
+        background: var(--bg-secondary);
+    }
+    
+    ::-webkit-scrollbar-thumb {
+        background: var(--border-light);
+        border-radius: 3px;
+    }
+    
+    ::-webkit-scrollbar-thumb:hover {
+        background: var(--text-muted);
     }
 </style> 
