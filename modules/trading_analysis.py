@@ -167,7 +167,7 @@ class KlineBot:
     def __init__(self, symbol, interval="4h"):
         self.symbol = symbol
         self.interval = interval
-        self.limit = 2000  # 4h周期下，4000条约2年数据
+        self.limit = 1000  # 4h周期下，4000条约2年数据
         self.data = self.fetch_data()
         if not self.data.empty:
             self.calculate_macd()
