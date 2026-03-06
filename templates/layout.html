@@ -8,6 +8,7 @@
     <link rel="shortcut icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
     <title>QKL⚡GROUP | 加密货币指标分析</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <script src="https://unpkg.com/lightweight-charts@4/dist/lightweight-charts.standalone.production.js"></script>
     {% include 'partials/styles.html' %}
 </head>
 <body>
@@ -16,7 +17,10 @@
         {% include 'partials/header.html' %}
         
         <div class="main-content">
+            {% include 'partials/dashboard.html' %}
             {% include 'partials/indicator.html' %}
+            {% include 'partials/ahr999.html' %}
+            {% include 'partials/mvrv.html' %}
             {% include 'partials/price_alert.html' %}
         </div>
         

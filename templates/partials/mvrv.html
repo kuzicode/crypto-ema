@@ -1,0 +1,73 @@
+<div id="mvrv-page" class="page-content">
+    <div class="mvrv-section">
+        <div class="mvrv-container">
+            <!-- 数据卡片区 -->
+            <div class="mvrv-cards">
+                <div class="mvrv-card mvrv-card-main">
+                    <div class="mvrv-card-label">当前 MVRV</div>
+                    <div class="mvrv-card-value" id="mvrv-value">—</div>
+                    <div class="mvrv-card-sub" id="mvrv-zone">—</div>
+                </div>
+                <div class="mvrv-card">
+                    <div class="mvrv-card-label">市场状态</div>
+                    <div class="mvrv-card-value" id="mvrv-status">—</div>
+                </div>
+                <div class="mvrv-card">
+                    <div class="mvrv-card-label">历史分位</div>
+                    <div class="mvrv-card-value" id="mvrv-percentile">—</div>
+                    <div class="mvrv-card-sub">相对历史位置</div>
+                </div>
+                <div class="mvrv-card">
+                    <div class="mvrv-card-label">BTC 价格</div>
+                    <div class="mvrv-card-value" id="mvrv-price">—</div>
+                </div>
+            </div>
+
+            <!-- 图表区 -->
+            <div class="mvrv-chart-wrapper">
+                <div class="mvrv-chart-header">
+                    <div class="chart-header-left">
+                        <h3>MVRV 历史走势</h3>
+                        <div class="mvrv-legend">
+                            <span class="mvrv-legend-item mvrv-zone-low">&lt; 1.0 低估</span>
+                            <span class="mvrv-legend-item mvrv-zone-fair">1.0 ~ 3.0 合理</span>
+                            <span class="mvrv-legend-item mvrv-zone-high">&gt; 3.0 高估</span>
+                        </div>
+                    </div>
+                    <div class="chart-header-right">
+                        <div class="chart-toggles">
+                            <button class="chart-toggle-btn" id="toggle-mvrv-btn" data-active="true">
+                                <span class="toggle-dot" style="background:#3b82f6"></span>MVRV
+                            </button>
+                            <button class="chart-toggle-btn" id="toggle-mvrv-price-btn" data-active="true">
+                                <span class="toggle-dot" style="background:#e5e5e5"></span>BTC价格
+                            </button>
+                        </div>
+                        <button class="refresh-btn" id="refresh-mvrv-btn">
+                            <i class="fas fa-sync-alt"></i> 刷新
+                        </button>
+                    </div>
+                </div>
+                <div id="mvrv-chart" class="mvrv-chart"></div>
+                <div id="mvrv-loading" class="loading" style="display: none;">
+                    <i class="fas fa-spinner fa-spin"></i>
+                    <p>加载 MVRV 数据中...</p>
+                </div>
+                <div id="mvrv-tooltip" class="mvrv-tooltip"></div>
+            </div>
+
+            <!-- 指标说明 -->
+            <div class="mvrv-info">
+                <h3>指标说明</h3>
+                <p>MVRV（Market Value to Realized Value）通过比较比特币的流通市值与实现市值，评估当前市场价格相对于全网持币者平均成本的偏离程度，是识别市场周期顶部和底部的重要链上指标。</p>
+                <p class="mvrv-formula">MVRV = 流通市值 (Market Cap) / 实现市值 (Realized Cap)</p>
+                <ul>
+                    <li><span class="mvrv-zone-low">MVRV &lt; 1.0</span> — 市场整体处于浮亏状态，历史上往往对应周期底部附近</li>
+                    <li><span class="mvrv-zone-fair">1.0 ≤ MVRV ≤ 3.0</span> — 市场估值处于合理区间，持币者整体盈利但未过热</li>
+                    <li><span class="mvrv-zone-high">MVRV &gt; 3.0</span> — 市场可能已经过热，历史上多次接近周期顶部</li>
+                </ul>
+                <p class="mvrv-warning">⚠️ 实现市值基于链上 UTXO 最后移动时的价格加权计算，反映的是全网持币者的聚合成本基础。该指标适用于宏观周期判断，短期波动中参考价值有限。</p>
+            </div>
+        </div>
+    </div>
+</div>

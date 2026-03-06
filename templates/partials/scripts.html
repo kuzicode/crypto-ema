@@ -1,37 +1,36 @@
 <script>
     document.addEventListener('DOMContentLoaded', () => {
-        // 导航菜单功能
-        const navItems = document.querySelectorAll('.nav-item');
+        // 导航功能
         const pages = document.querySelectorAll('.page-content');
-        
-        // 初始化页面状态
-        function updatePageVisibility(targetPageId) {
-            console.log('切换到页面:', targetPageId);
-            
-            // 显示对应页面
+        const backHomeBtn = document.querySelector('.nav-back-home');
+        const validPages = ['dashboard', 'indicator', 'ahr999', 'mvrv', 'price_alert'];
+
+        function navigateTo(pageKey) {
+            var targetPageId = pageKey + '-page';
             pages.forEach(page => {
-                const isTargetPage = page.id === targetPageId;
-                page.classList.toggle('active', isTargetPage);
-                console.log(`页面 ${page.id} 状态:`, isTargetPage ? '显示' : '隐藏');
+                page.classList.toggle('active', page.id === targetPageId);
+            });
+            if (backHomeBtn) {
+                backHomeBtn.style.display = (pageKey === 'dashboard') ? 'none' : 'flex';
+            }
+            window.location.hash = pageKey;
+        }
+
+        if (backHomeBtn) {
+            backHomeBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                navigateTo('dashboard');
+                if (typeof onPageNavigated === 'function') onPageNavigated('dashboard');
             });
         }
-        
-        navItems.forEach(item => {
-            item.addEventListener('click', function(e) {
-                e.preventDefault();
-                
-                // 更新导航项的活动状态
-                navItems.forEach(nav => nav.classList.remove('active'));
-                this.classList.add('active');
-                
-                // 获取目标页面ID
-                const targetPage = this.getAttribute('data-page');
-                const targetPageId = `${targetPage}-page`;
-                
-                // 更新页面显示
-                updatePageVisibility(targetPageId);
-            });
-        });
+
+        // 根据 URL hash 初始化页面显示
+        (function() {
+            var hash = window.location.hash.replace('#', '');
+            if (hash && hash !== 'dashboard' && validPages.indexOf(hash) !== -1) {
+                navigateTo(hash);
+            }
+        })();
         
         // 元素引用
         const form = document.getElementById('chart-form');
@@ -562,15 +561,733 @@
             }
         }, 500);
         
-        // 添加导航变化事件监听器，切换到币价提醒页面时自动加载数据
-        navItems.forEach(item => {
-            item.addEventListener('click', function() {
-                if (this.getAttribute('data-page') === 'price_alert' && refreshAlertsBtn) {
-                    setTimeout(() => {
-                        fetchPriceAlerts();
-                    }, 100);
-                }
+        // 页面切换后自动加载对应数据
+        function onPageNavigated(page) {
+            if (page === 'dashboard') {
+                setTimeout(function() {
+                    if (!dashboardState.loaded) fetchDashboard();
+                }, 100);
+            }
+            if (page === 'price_alert' && refreshAlertsBtn) {
+                setTimeout(function() {
+                    fetchPriceAlerts();
+                }, 100);
+            }
+            if (page === 'ahr999') {
+                setTimeout(function() {
+                    if (typeof ahr999State !== 'undefined' && !ahr999State.loaded) fetchAhr999Data();
+                    else if (typeof resizeAhr999Chart === 'function') resizeAhr999Chart();
+                }, 100);
+            }
+            if (page === 'mvrv') {
+                setTimeout(function() {
+                    if (typeof mvrvState !== 'undefined' && !mvrvState.loaded) fetchMvrvData();
+                    else if (typeof resizeMvrvChart === 'function') resizeMvrvChart();
+                }, 100);
+            }
+        }
+
+        // ==================== Dashboard 主页功能 ====================
+
+        const dashboardState = { loaded: false, lastFetchTime: 0 };
+        const dashLoading = document.getElementById('dashboard-loading');
+
+        function getAhr999StatusColor(val) {
+            if (val < 0.45) return '#22c55e';
+            if (val <= 1.2) return '#eab308';
+            return '#ef4444';
+        }
+
+        function getMvrvStatusColor(val) {
+            if (val < 1.0) return '#22c55e';
+            if (val <= 3.0) return '#eab308';
+            return '#ef4444';
+        }
+
+        function updateDashboardCards(data) {
+            var timeEl = document.getElementById('dashboard-update-time');
+            if (timeEl) {
+                var now = new Date();
+                timeEl.textContent = '数据更新：' + now.getFullYear() + '-' +
+                    String(now.getMonth() + 1).padStart(2, '0') + '-' +
+                    String(now.getDate()).padStart(2, '0') + ' ' +
+                    String(now.getHours()).padStart(2, '0') + ':' +
+                    String(now.getMinutes()).padStart(2, '0');
+            }
+
+            if (data.ahr999) {
+                var aVal = document.getElementById('dash-ahr999-value');
+                var aDot = document.getElementById('dash-ahr999-dot');
+                var aStatus = document.getElementById('dash-ahr999-status');
+                var color = getAhr999StatusColor(data.ahr999.ahr999);
+                aVal.textContent = data.ahr999.ahr999.toFixed(2);
+                aVal.classList.remove('skeleton');
+                aVal.style.color = color;
+                aDot.style.background = color;
+                aStatus.textContent = data.ahr999.suggestion;
+                aStatus.style.color = color;
+            }
+
+            if (data.mvrv) {
+                var mVal = document.getElementById('dash-mvrv-value');
+                var mDot = document.getElementById('dash-mvrv-dot');
+                var mStatus = document.getElementById('dash-mvrv-status');
+                var mColor = getMvrvStatusColor(data.mvrv.mvrv);
+                mVal.textContent = data.mvrv.mvrv.toFixed(2);
+                mVal.classList.remove('skeleton');
+                mVal.style.color = mColor;
+                mDot.style.background = mColor;
+                mStatus.textContent = data.mvrv.status;
+                mStatus.style.color = mColor;
+            }
+        }
+
+        function fetchDashboard() {
+            var now = Date.now();
+            if (now - dashboardState.lastFetchTime < 5000) return;
+            dashboardState.lastFetchTime = now;
+
+            // 骨架屏
+            var skeletonEls = document.querySelectorAll('.dash-card-value');
+            skeletonEls.forEach(function(el) {
+                if (el.textContent === '—') el.classList.add('skeleton');
+            });
+
+            if (dashLoading) dashLoading.style.display = 'block';
+
+            fetch('/get_dashboard')
+                .then(function(resp) {
+                    if (!resp.ok) throw new Error('HTTP ' + resp.status);
+                    return resp.json();
+                })
+                .then(function(data) {
+                    if (dashLoading) dashLoading.style.display = 'none';
+                    if (data.success) {
+                        updateDashboardCards(data);
+                        dashboardState.loaded = true;
+                    }
+                })
+                .catch(function(err) {
+                    if (dashLoading) dashLoading.style.display = 'none';
+                    console.error('Dashboard 数据获取失败:', err);
+                });
+        }
+
+        // Dashboard 卡片点击 -> 跳转到对应子页面
+        document.querySelectorAll('.dashboard-card[data-target]').forEach(function(card) {
+            card.addEventListener('click', function() {
+                var target = this.getAttribute('data-target');
+                navigateTo(target);
+                onPageNavigated(target);
             });
         });
+
+        // 根据当前页面加载对应数据
+        (function() {
+            var hash = window.location.hash.replace('#', '');
+            var currentPage = (hash && hash !== 'dashboard' && validPages.indexOf(hash) !== -1) ? hash : 'dashboard';
+            if (currentPage === 'dashboard') {
+                setTimeout(fetchDashboard, 300);
+            } else {
+                setTimeout(function() { onPageNavigated(currentPage); }, 300);
+            }
+        })();
+
+        // ==================== AHR999 指标功能 ====================
+
+        const ahr999State = {
+            loaded: false,
+            chart: null,
+            ahr999Series: null,
+            priceSeries: null,
+            costSeries: null,
+            fittedSeries: null,
+            hline045: null,
+            hline120: null,
+            ahr999Visible: true,
+            priceVisible: true,
+            costVisible: false,
+            fittedVisible: false,
+            lastFetchTime: 0
+        };
+
+        const refreshAhr999Btn = document.getElementById('refresh-ahr999-btn');
+        const ahr999ChartEl = document.getElementById('ahr999-chart');
+        const ahr999Loading = document.getElementById('ahr999-loading');
+        const ahr999Tooltip = document.getElementById('ahr999-tooltip');
+
+        function getAhr999Color(val) {
+            if (val < 0.45) return '#22c55e';
+            if (val <= 1.2) return '#eab308';
+            return '#ef4444';
+        }
+
+        function initAhr999Chart() {
+            if (ahr999State.chart) return;
+            if (!ahr999ChartEl || ahr999ChartEl.offsetWidth === 0) return;
+
+            const chart = LightweightCharts.createChart(ahr999ChartEl, {
+                width: ahr999ChartEl.offsetWidth,
+                height: ahr999ChartEl.offsetHeight || 350,
+                layout: {
+                    background: { color: '#1e1e1e' },
+                    textColor: '#9ca3af'
+                },
+                grid: {
+                    vertLines: { color: '#2a2a2a' },
+                    horzLines: { color: '#2a2a2a' }
+                },
+                crosshair: {
+                    mode: LightweightCharts.CrosshairMode.Normal
+                },
+                rightPriceScale: {
+                    borderColor: '#2a2a2a',
+                    visible: true
+                },
+                leftPriceScale: {
+                    borderColor: '#2a2a2a',
+                    visible: true
+                },
+                timeScale: {
+                    borderColor: '#2a2a2a',
+                    timeVisible: false
+                },
+                handleScroll: true,
+                handleScale: true
+            });
+
+            const ahr999Series = chart.addLineSeries({
+                color: '#3b82f6',
+                lineWidth: 2,
+                title: 'AHR999',
+                priceScaleId: 'right',
+                lastValueVisible: true,
+                priceLineVisible: false
+            });
+
+            const priceSeries = chart.addLineSeries({
+                color: '#e5e5e5',
+                lineWidth: 1,
+                title: 'BTC价格',
+                priceScaleId: 'left',
+                lastValueVisible: true,
+                priceLineVisible: false
+            });
+
+            const costSeries = chart.addLineSeries({
+                color: '#a855f7',
+                lineWidth: 1,
+                title: '200日成本',
+                priceScaleId: 'left',
+                lastValueVisible: false,
+                priceLineVisible: false,
+                lineStyle: LightweightCharts.LineStyle.Dashed,
+                visible: false
+            });
+
+            const fittedSeries = chart.addLineSeries({
+                color: '#38bdf8',
+                lineWidth: 1,
+                title: '拟合价格',
+                priceScaleId: 'left',
+                lastValueVisible: false,
+                priceLineVisible: false,
+                lineStyle: LightweightCharts.LineStyle.Dashed,
+                visible: false
+            });
+
+            const hline045 = chart.addLineSeries({
+                color: 'rgba(34,197,94,0.4)',
+                lineWidth: 1,
+                lineStyle: LightweightCharts.LineStyle.Dashed,
+                priceScaleId: 'right',
+                lastValueVisible: true,
+                priceLineVisible: false,
+                crosshairMarkerVisible: false,
+                title: '0.45'
+            });
+
+            const hline120 = chart.addLineSeries({
+                color: 'rgba(239,68,68,0.4)',
+                lineWidth: 1,
+                lineStyle: LightweightCharts.LineStyle.Dashed,
+                priceScaleId: 'right',
+                lastValueVisible: true,
+                priceLineVisible: false,
+                crosshairMarkerVisible: false,
+                title: '1.2'
+            });
+
+            ahr999State.hline045 = hline045;
+            ahr999State.hline120 = hline120;
+
+            chart.subscribeCrosshairMove(function(param) {
+                if (!param || !param.time || !param.seriesData || param.seriesData.size === 0) {
+                    ahr999Tooltip.style.display = 'none';
+                    return;
+                }
+
+                const ahr999Val = ahr999State.ahr999Visible ? param.seriesData.get(ahr999Series) : null;
+                const priceVal = ahr999State.priceVisible ? param.seriesData.get(priceSeries) : null;
+                const costVal = ahr999State.costVisible ? param.seriesData.get(costSeries) : null;
+                const fittedVal = ahr999State.fittedVisible ? param.seriesData.get(fittedSeries) : null;
+
+                if (!ahr999Val && !priceVal && !costVal && !fittedVal) {
+                    ahr999Tooltip.style.display = 'none';
+                    return;
+                }
+
+                const dateStr = param.time;
+                let html = `<div style="margin-bottom:4px;color:#6b7280">${dateStr}</div>`;
+                if (ahr999Val) {
+                    const color = getAhr999Color(ahr999Val.value);
+                    html += `<div>AHR999: <span style="color:${color};font-weight:bold">${ahr999Val.value.toFixed(4)}</span></div>`;
+                }
+                if (priceVal) html += `<div>BTC: <span style="color:#e5e5e5">$${priceVal.value.toLocaleString()}</span></div>`;
+                if (costVal) html += `<div>200d: <span style="color:#a855f7">$${costVal.value.toLocaleString()}</span></div>`;
+                if (fittedVal) html += `<div>拟合: <span style="color:#38bdf8">$${fittedVal.value.toLocaleString()}</span></div>`;
+
+                ahr999Tooltip.innerHTML = html;
+                ahr999Tooltip.style.display = 'block';
+            });
+
+            ahr999State.chart = chart;
+            ahr999State.ahr999Series = ahr999Series;
+            ahr999State.priceSeries = priceSeries;
+            ahr999State.costSeries = costSeries;
+            ahr999State.fittedSeries = fittedSeries;
+
+            var toggleAhr999Btn = document.getElementById('toggle-ahr999-btn');
+            var togglePriceBtn = document.getElementById('toggle-price-btn');
+            var toggleCostBtn = document.getElementById('toggle-cost-btn');
+            var toggleFittedBtn = document.getElementById('toggle-fitted-btn');
+
+            if (toggleAhr999Btn) {
+                toggleAhr999Btn.addEventListener('click', function() {
+                    ahr999State.ahr999Visible = !ahr999State.ahr999Visible;
+                    this.setAttribute('data-active', ahr999State.ahr999Visible);
+                    ahr999Series.applyOptions({ visible: ahr999State.ahr999Visible });
+                });
+            }
+
+            if (togglePriceBtn) {
+                togglePriceBtn.addEventListener('click', function() {
+                    ahr999State.priceVisible = !ahr999State.priceVisible;
+                    this.setAttribute('data-active', ahr999State.priceVisible);
+                    priceSeries.applyOptions({ visible: ahr999State.priceVisible });
+                });
+            }
+
+            if (toggleCostBtn) {
+                toggleCostBtn.addEventListener('click', function() {
+                    ahr999State.costVisible = !ahr999State.costVisible;
+                    this.setAttribute('data-active', ahr999State.costVisible);
+                    costSeries.applyOptions({ visible: ahr999State.costVisible });
+                });
+            }
+
+            if (toggleFittedBtn) {
+                toggleFittedBtn.addEventListener('click', function() {
+                    ahr999State.fittedVisible = !ahr999State.fittedVisible;
+                    this.setAttribute('data-active', ahr999State.fittedVisible);
+                    fittedSeries.applyOptions({ visible: ahr999State.fittedVisible });
+                });
+            }
+        }
+
+        function resizeAhr999Chart() {
+            if (ahr999State.chart && ahr999ChartEl) {
+                ahr999State.chart.applyOptions({
+                    width: ahr999ChartEl.offsetWidth,
+                    height: ahr999ChartEl.offsetHeight || 350
+                });
+            }
+        }
+
+        function updateAhr999Cards(current) {
+            const valueEl = document.getElementById('ahr999-value');
+            const zoneEl = document.getElementById('ahr999-zone');
+            const priceEl = document.getElementById('ahr999-price');
+            const costEl = document.getElementById('ahr999-cost');
+            const fittedEl = document.getElementById('ahr999-fitted');
+            const suggEl = document.getElementById('ahr999-suggestion');
+
+            const color = getAhr999Color(current.ahr999);
+
+            valueEl.textContent = current.ahr999.toFixed(4);
+            valueEl.style.color = color;
+            zoneEl.textContent = current.suggestion;
+            zoneEl.style.color = color;
+
+            priceEl.textContent = '$' + current.price.toLocaleString();
+            costEl.textContent = '$' + current.cost_200d.toLocaleString();
+            fittedEl.textContent = '$' + current.fitted_price.toLocaleString();
+
+            suggEl.textContent = current.suggestion;
+            suggEl.style.color = color;
+        }
+
+        function updateAhr999Chart(history) {
+            if (!ahr999State.chart) return;
+
+            const ahr999Data = [];
+            const priceData = [];
+            const costData = [];
+            const fittedData = [];
+
+            history.forEach(item => {
+                const time = item.date;
+                ahr999Data.push({ time, value: item.ahr999 });
+                priceData.push({ time, value: item.price });
+                costData.push({ time, value: item.cost_200d });
+                fittedData.push({ time, value: item.fitted_price });
+            });
+
+            ahr999State.ahr999Series.setData(ahr999Data);
+            ahr999State.priceSeries.setData(priceData);
+            ahr999State.costSeries.setData(costData);
+            ahr999State.fittedSeries.setData(fittedData);
+
+            if (history.length >= 2) {
+                var firstTime = history[0].date;
+                var lastTime = history[history.length - 1].date;
+                ahr999State.hline045.setData([
+                    { time: firstTime, value: 0.45 },
+                    { time: lastTime, value: 0.45 }
+                ]);
+                ahr999State.hline120.setData([
+                    { time: firstTime, value: 1.2 },
+                    { time: lastTime, value: 1.2 }
+                ]);
+            }
+
+            ahr999State.chart.timeScale().fitContent();
+        }
+
+        function fetchAhr999Data() {
+            const now = Date.now();
+            if (now - ahr999State.lastFetchTime < 5000) return;
+            ahr999State.lastFetchTime = now;
+
+            ahr999Loading.style.display = 'block';
+            if (refreshAhr999Btn) {
+                refreshAhr999Btn.classList.add('loading');
+                refreshAhr999Btn.disabled = true;
+            }
+
+            fetch('/get_ahr999')
+                .then(response => {
+                    if (!response.ok) throw new Error('HTTP ' + response.status);
+                    return response.json();
+                })
+                .then(data => {
+                    ahr999Loading.style.display = 'none';
+                    if (refreshAhr999Btn) {
+                        refreshAhr999Btn.classList.remove('loading');
+                        refreshAhr999Btn.disabled = false;
+                    }
+
+                    if (data.success) {
+                        updateAhr999Cards(data.current);
+                        initAhr999Chart();
+                        updateAhr999Chart(data.history);
+                        ahr999State.loaded = true;
+                    } else {
+                        console.error('AHR999 数据获取失败:', data.error);
+                    }
+                })
+                .catch(error => {
+                    ahr999Loading.style.display = 'none';
+                    if (refreshAhr999Btn) {
+                        refreshAhr999Btn.classList.remove('loading');
+                        refreshAhr999Btn.disabled = false;
+                    }
+                    console.error('AHR999 请求出错:', error);
+                });
+        }
+
+        if (refreshAhr999Btn) {
+            refreshAhr999Btn.addEventListener('click', function() {
+                ahr999State.lastFetchTime = 0;
+                fetchAhr999Data();
+            });
+        }
+
+        window.addEventListener('resize', debounce(resizeAhr999Chart, 200));
+
+        if (window.location.hash === '#ahr999') {
+            setTimeout(fetchAhr999Data, 600);
+        }
+
+        // ==================== MVRV 指标功能 ====================
+
+        const mvrvState = {
+            loaded: false,
+            chart: null,
+            mvrvSeries: null,
+            priceSeries: null,
+            hline1: null,
+            hline3: null,
+            mvrvVisible: true,
+            priceVisible: true,
+            lastFetchTime: 0
+        };
+
+        const refreshMvrvBtn = document.getElementById('refresh-mvrv-btn');
+        const mvrvChartEl = document.getElementById('mvrv-chart');
+        const mvrvLoading = document.getElementById('mvrv-loading');
+        const mvrvTooltip = document.getElementById('mvrv-tooltip');
+
+        function getMvrvColor(val) {
+            if (val < 1.0) return '#22c55e';
+            if (val <= 3.0) return '#eab308';
+            return '#ef4444';
+        }
+
+        function initMvrvChart() {
+            if (mvrvState.chart) return;
+            if (!mvrvChartEl || mvrvChartEl.offsetWidth === 0) return;
+
+            const chart = LightweightCharts.createChart(mvrvChartEl, {
+                width: mvrvChartEl.offsetWidth,
+                height: mvrvChartEl.offsetHeight || 350,
+                layout: {
+                    background: { color: '#1e1e1e' },
+                    textColor: '#9ca3af'
+                },
+                grid: {
+                    vertLines: { color: '#2a2a2a' },
+                    horzLines: { color: '#2a2a2a' }
+                },
+                crosshair: {
+                    mode: LightweightCharts.CrosshairMode.Normal
+                },
+                rightPriceScale: {
+                    borderColor: '#2a2a2a',
+                    visible: true
+                },
+                leftPriceScale: {
+                    borderColor: '#2a2a2a',
+                    visible: true
+                },
+                timeScale: {
+                    borderColor: '#2a2a2a',
+                    timeVisible: false
+                },
+                handleScroll: true,
+                handleScale: true
+            });
+
+            const mvrvSeries = chart.addLineSeries({
+                color: '#3b82f6',
+                lineWidth: 2,
+                title: 'MVRV',
+                priceScaleId: 'right',
+                lastValueVisible: true,
+                priceLineVisible: false
+            });
+
+            const priceSeries = chart.addLineSeries({
+                color: '#e5e5e5',
+                lineWidth: 1,
+                title: 'BTC价格',
+                priceScaleId: 'left',
+                lastValueVisible: true,
+                priceLineVisible: false
+            });
+
+            const hline1 = chart.addLineSeries({
+                color: 'rgba(34,197,94,0.4)',
+                lineWidth: 1,
+                lineStyle: LightweightCharts.LineStyle.Dashed,
+                priceScaleId: 'right',
+                lastValueVisible: true,
+                priceLineVisible: false,
+                crosshairMarkerVisible: false,
+                title: '1.0'
+            });
+
+            const hline3 = chart.addLineSeries({
+                color: 'rgba(239,68,68,0.4)',
+                lineWidth: 1,
+                lineStyle: LightweightCharts.LineStyle.Dashed,
+                priceScaleId: 'right',
+                lastValueVisible: true,
+                priceLineVisible: false,
+                crosshairMarkerVisible: false,
+                title: '3.0'
+            });
+
+            mvrvState.hline1 = hline1;
+            mvrvState.hline3 = hline3;
+
+            chart.subscribeCrosshairMove(function(param) {
+                if (!param || !param.time || !param.seriesData || param.seriesData.size === 0) {
+                    mvrvTooltip.style.display = 'none';
+                    return;
+                }
+
+                const mvrvVal = mvrvState.mvrvVisible ? param.seriesData.get(mvrvSeries) : null;
+                const priceVal = mvrvState.priceVisible ? param.seriesData.get(priceSeries) : null;
+
+                if (!mvrvVal && !priceVal) {
+                    mvrvTooltip.style.display = 'none';
+                    return;
+                }
+
+                const dateStr = param.time;
+                let html = '<div style="margin-bottom:4px;color:#6b7280">' + dateStr + '</div>';
+                if (mvrvVal) {
+                    const color = getMvrvColor(mvrvVal.value);
+                    html += '<div>MVRV: <span style="color:' + color + ';font-weight:bold">' + mvrvVal.value.toFixed(4) + '</span></div>';
+                }
+                if (priceVal) html += '<div>BTC: <span style="color:#e5e5e5">$' + priceVal.value.toLocaleString() + '</span></div>';
+
+                mvrvTooltip.innerHTML = html;
+                mvrvTooltip.style.display = 'block';
+            });
+
+            mvrvState.chart = chart;
+            mvrvState.mvrvSeries = mvrvSeries;
+            mvrvState.priceSeries = priceSeries;
+
+            var toggleMvrvBtn = document.getElementById('toggle-mvrv-btn');
+            var toggleMvrvPriceBtn = document.getElementById('toggle-mvrv-price-btn');
+
+            if (toggleMvrvBtn) {
+                toggleMvrvBtn.addEventListener('click', function() {
+                    mvrvState.mvrvVisible = !mvrvState.mvrvVisible;
+                    this.setAttribute('data-active', mvrvState.mvrvVisible);
+                    mvrvSeries.applyOptions({ visible: mvrvState.mvrvVisible });
+                });
+            }
+
+            if (toggleMvrvPriceBtn) {
+                toggleMvrvPriceBtn.addEventListener('click', function() {
+                    mvrvState.priceVisible = !mvrvState.priceVisible;
+                    this.setAttribute('data-active', mvrvState.priceVisible);
+                    priceSeries.applyOptions({ visible: mvrvState.priceVisible });
+                });
+            }
+        }
+
+        function resizeMvrvChart() {
+            if (mvrvState.chart && mvrvChartEl) {
+                mvrvState.chart.applyOptions({
+                    width: mvrvChartEl.offsetWidth,
+                    height: mvrvChartEl.offsetHeight || 350
+                });
+            }
+        }
+
+        function updateMvrvCards(current) {
+            const valueEl = document.getElementById('mvrv-value');
+            const zoneEl = document.getElementById('mvrv-zone');
+            const statusEl = document.getElementById('mvrv-status');
+            const percentileEl = document.getElementById('mvrv-percentile');
+            const priceEl = document.getElementById('mvrv-price');
+
+            const color = getMvrvColor(current.mvrv);
+
+            valueEl.textContent = current.mvrv.toFixed(4);
+            valueEl.style.color = color;
+            zoneEl.textContent = current.status;
+            zoneEl.style.color = color;
+
+            statusEl.textContent = current.status;
+            statusEl.style.color = color;
+
+            percentileEl.textContent = current.percentile + '%';
+
+            priceEl.textContent = '$' + current.price.toLocaleString();
+        }
+
+        function updateMvrvChart(history) {
+            if (!mvrvState.chart) return;
+
+            const mvrvData = [];
+            const priceData = [];
+
+            history.forEach(function(item) {
+                var time = item.date;
+                mvrvData.push({ time: time, value: item.mvrv });
+                if (item.price) {
+                    priceData.push({ time: time, value: item.price });
+                }
+            });
+
+            mvrvState.mvrvSeries.setData(mvrvData);
+            mvrvState.priceSeries.setData(priceData);
+
+            if (history.length >= 2) {
+                var firstTime = history[0].date;
+                var lastTime = history[history.length - 1].date;
+                mvrvState.hline1.setData([
+                    { time: firstTime, value: 1.0 },
+                    { time: lastTime, value: 1.0 }
+                ]);
+                mvrvState.hline3.setData([
+                    { time: firstTime, value: 3.0 },
+                    { time: lastTime, value: 3.0 }
+                ]);
+            }
+
+            mvrvState.chart.timeScale().fitContent();
+        }
+
+        function fetchMvrvData() {
+            var now = Date.now();
+            if (now - mvrvState.lastFetchTime < 5000) return;
+            mvrvState.lastFetchTime = now;
+
+            mvrvLoading.style.display = 'block';
+            if (refreshMvrvBtn) {
+                refreshMvrvBtn.classList.add('loading');
+                refreshMvrvBtn.disabled = true;
+            }
+
+            fetch('/get_mvrv')
+                .then(function(response) {
+                    if (!response.ok) throw new Error('HTTP ' + response.status);
+                    return response.json();
+                })
+                .then(function(data) {
+                    mvrvLoading.style.display = 'none';
+                    if (refreshMvrvBtn) {
+                        refreshMvrvBtn.classList.remove('loading');
+                        refreshMvrvBtn.disabled = false;
+                    }
+
+                    if (data.success) {
+                        updateMvrvCards(data.current);
+                        initMvrvChart();
+                        updateMvrvChart(data.history);
+                        mvrvState.loaded = true;
+                    } else {
+                        console.error('MVRV 数据获取失败:', data.error);
+                    }
+                })
+                .catch(function(error) {
+                    mvrvLoading.style.display = 'none';
+                    if (refreshMvrvBtn) {
+                        refreshMvrvBtn.classList.remove('loading');
+                        refreshMvrvBtn.disabled = false;
+                    }
+                    console.error('MVRV 请求出错:', error);
+                });
+        }
+
+        if (refreshMvrvBtn) {
+            refreshMvrvBtn.addEventListener('click', function() {
+                mvrvState.lastFetchTime = 0;
+                fetchMvrvData();
+            });
+        }
+
+        window.addEventListener('resize', debounce(resizeMvrvChart, 200));
+
+        if (window.location.hash === '#mvrv') {
+            setTimeout(fetchMvrvData, 600);
+        }
     });
 </script> 
