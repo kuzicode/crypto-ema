@@ -2,7 +2,7 @@ from flask import render_template, jsonify, request
 import logging
 import concurrent.futures
 from datetime import datetime, timedelta
-from modules.trading_analysis import KlineBot, token_trend
+from modules.trading_analysis import KlineBot, token_trend, calculate_ahr999, fetch_mvrv_data
 
 logger = logging.getLogger(__name__)
 
@@ -125,6 +125,58 @@ def init_routes(app):
                 'error': str(e)
             })
             
+    @app.route('/get_dashboard', methods=['GET'])
+    def get_dashboard():
+        """获取仪表盘摘要数据"""
+        result = {}
+        try:
+            ahr = calculate_ahr999()
+            result['ahr999'] = ahr['current'] if ahr else None
+        except Exception as e:
+            logger.error(f"Dashboard 获取 AHR999 出错: {e}")
+            result['ahr999'] = None
+        try:
+            mvrv = fetch_mvrv_data()
+            result['mvrv'] = mvrv['current'] if mvrv else None
+        except Exception as e:
+            logger.error(f"Dashboard 获取 MVRV 出错: {e}")
+            result['mvrv'] = None
+        return jsonify({'success': True, **result})
+
+    @app.route('/get_ahr999', methods=['GET'])
+    def get_ahr999():
+        """获取 AHR999 指标数据"""
+        try:
+            result = calculate_ahr999()
+            if result is None:
+                return jsonify({'success': False, 'error': '无法计算 AHR999 指标'})
+            
+            return jsonify({
+                'success': True,
+                'current': result['current'],
+                'history': result['history']
+            })
+        except Exception as e:
+            logger.error(f"获取 AHR999 数据时出错: {e}")
+            return jsonify({'success': False, 'error': str(e)})
+    
+    @app.route('/get_mvrv', methods=['GET'])
+    def get_mvrv():
+        """获取 MVRV 指标数据"""
+        try:
+            result = fetch_mvrv_data()
+            if result is None:
+                return jsonify({'success': False, 'error': '无法获取 MVRV 指标数据'})
+            
+            return jsonify({
+                'success': True,
+                'current': result['current'],
+                'history': result['history']
+            })
+        except Exception as e:
+            logger.error(f"获取 MVRV 数据时出错: {e}")
+            return jsonify({'success': False, 'error': str(e)})
+    
     @app.route('/get_price_alerts', methods=['GET'])
     def get_price_alerts():
         """获取币价变动提醒记录（从 telegram_alert.json 读取）"""

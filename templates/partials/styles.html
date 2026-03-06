@@ -126,6 +126,28 @@
         background-color: var(--bg-tertiary);
         font-weight: 500;
     }
+
+    .nav-back-home {
+        display: none;
+        align-items: center;
+        gap: 6px;
+        color: var(--text-secondary);
+        font-size: 14px;
+        padding: 6px 14px;
+        border-radius: 6px;
+        border: 1px solid var(--border-color);
+        transition: all 0.2s ease;
+    }
+
+    .nav-back-home:hover {
+        color: var(--text-primary);
+        border-color: var(--border-light);
+        background-color: var(--bg-hover);
+    }
+
+    .nav-back-home i {
+        font-size: 12px;
+    }
     
     .page-title {
         display: none;
@@ -898,5 +920,719 @@
     
     ::-webkit-scrollbar-thumb:hover {
         background: var(--text-muted);
+    }
+
+    /* ==================== AHR999 页面样式 ==================== */
+
+    .ahr999-section {
+        flex: 1;
+        min-width: 0;
+        overflow-y: auto;
+        overflow-x: hidden;
+    }
+
+    .ahr999-container {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        height: 100%;
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 24px;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    /* 数据卡片区 */
+    .ahr999-cards {
+        display: flex;
+        gap: 10px;
+        flex-shrink: 0;
+    }
+
+    .ahr999-card {
+        flex: 1;
+        background-color: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        padding: 12px 16px;
+        text-align: center;
+        min-width: 0;
+    }
+
+    .ahr999-card-label {
+        font-size: 11px;
+        color: var(--text-muted);
+        margin-bottom: 6px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .ahr999-card-value {
+        font-size: 22px;
+        font-weight: 700;
+        color: var(--text-primary);
+        line-height: 1.2;
+    }
+
+    .ahr999-card-sub {
+        font-size: 11px;
+        color: var(--text-muted);
+        margin-top: 4px;
+    }
+
+    .ahr999-card-main .ahr999-card-value {
+        font-size: 28px;
+    }
+
+    /* 区间图例（内嵌在图表头部） */
+    .ahr999-legend {
+        display: flex;
+        gap: 10px;
+    }
+
+    .ahr999-legend-item {
+        font-size: 11px;
+        padding: 2px 8px;
+        border-radius: 4px;
+        background-color: var(--bg-tertiary);
+        border: 1px solid var(--border-color);
+    }
+
+    .ahr999-zone-buy {
+        color: #22c55e;
+    }
+
+    .ahr999-zone-dca {
+        color: #eab308;
+    }
+
+    .ahr999-zone-wait {
+        color: #ef4444;
+    }
+
+    /* 图表区 */
+    .ahr999-chart-wrapper {
+        flex: 1;
+        min-height: 350px;
+        background-color: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        padding: 12px;
+        position: relative;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .ahr999-chart-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 8px;
+        flex-shrink: 0;
+        flex-wrap: wrap;
+        gap: 6px;
+    }
+
+    .ahr999-chart-header h3 {
+        font-size: 14px;
+        color: var(--text-primary);
+        margin: 0;
+    }
+
+    .chart-header-left {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+
+    .chart-header-right {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .chart-toggles {
+        display: flex;
+        gap: 6px;
+    }
+
+    .chart-toggle-btn {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        background: transparent;
+        border: 1px solid var(--border-color);
+        border-radius: 4px;
+        color: var(--text-muted);
+        font-size: 11px;
+        padding: 3px 10px;
+        cursor: pointer;
+        transition: all 0.2s;
+        opacity: 0.5;
+    }
+
+    .chart-toggle-btn:hover {
+        opacity: 0.8;
+    }
+
+    .chart-toggle-btn[data-active="true"] {
+        opacity: 1;
+        border-color: var(--text-secondary);
+        color: var(--text-primary);
+    }
+
+    .toggle-dot {
+        display: inline-block;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+    }
+
+    .ahr999-chart {
+        flex: 1;
+        min-height: 280px;
+    }
+
+    .ahr999-tooltip {
+        display: none;
+        position: absolute;
+        top: 50px;
+        left: 16px;
+        background-color: rgba(20, 20, 20, 0.9);
+        border: 1px solid var(--border-light);
+        border-radius: 6px;
+        padding: 8px 12px;
+        font-size: 12px;
+        color: var(--text-primary);
+        z-index: 10;
+        pointer-events: none;
+        line-height: 1.6;
+    }
+
+    /* 指标说明 */
+    .ahr999-info {
+        background-color: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        padding: 14px 18px;
+        flex-shrink: 0;
+    }
+
+    .ahr999-info h3 {
+        font-size: 14px;
+        color: var(--text-primary);
+        margin-bottom: 8px;
+    }
+
+    .ahr999-info p {
+        font-size: 12px;
+        color: var(--text-secondary);
+        margin-bottom: 6px;
+        line-height: 1.6;
+    }
+
+    .ahr999-formula {
+        font-family: 'Courier New', monospace;
+        background-color: var(--bg-tertiary);
+        padding: 6px 12px;
+        border-radius: 4px;
+        border: 1px solid var(--border-color);
+        color: var(--text-primary) !important;
+        font-weight: 500;
+    }
+
+    .ahr999-info ul {
+        list-style: none;
+        padding: 0;
+        margin: 8px 0;
+    }
+
+    .ahr999-info ul li {
+        font-size: 12px;
+        color: var(--text-secondary);
+        margin-bottom: 4px;
+        padding-left: 16px;
+        position: relative;
+    }
+
+    .ahr999-info ul li::before {
+        content: '•';
+        position: absolute;
+        left: 4px;
+        color: var(--text-muted);
+    }
+
+    .ahr999-warning {
+        color: var(--text-muted) !important;
+        font-size: 11px !important;
+        margin-top: 8px !important;
+    }
+
+    /* AHR999 响应式 */
+    @media (max-width: 768px) {
+        .ahr999-container {
+            padding: 0 12px;
+        }
+
+        .ahr999-cards {
+            flex-wrap: wrap;
+        }
+
+        .ahr999-card {
+            flex: 1 1 calc(50% - 5px);
+            min-width: calc(50% - 5px);
+        }
+
+        .ahr999-card-main {
+            flex: 1 1 100%;
+        }
+
+        .ahr999-legend {
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .chart-header-left,
+        .chart-header-right {
+            flex-wrap: wrap;
+        }
+
+        .chart-toggles {
+            flex-wrap: wrap;
+        }
+
+        .ahr999-chart-wrapper {
+            min-height: 300px;
+        }
+    }
+
+    /* ==================== MVRV 页面样式 ==================== */
+
+    .mvrv-section {
+        flex: 1;
+        min-width: 0;
+        overflow-y: auto;
+        overflow-x: hidden;
+    }
+
+    .mvrv-container {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        height: 100%;
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 24px;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .mvrv-cards {
+        display: flex;
+        gap: 10px;
+        flex-shrink: 0;
+    }
+
+    .mvrv-card {
+        flex: 1;
+        background-color: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        padding: 12px 16px;
+        text-align: center;
+        min-width: 0;
+    }
+
+    .mvrv-card-label {
+        font-size: 11px;
+        color: var(--text-muted);
+        margin-bottom: 6px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .mvrv-card-value {
+        font-size: 22px;
+        font-weight: 700;
+        color: var(--text-primary);
+        line-height: 1.2;
+    }
+
+    .mvrv-card-sub {
+        font-size: 11px;
+        color: var(--text-muted);
+        margin-top: 4px;
+    }
+
+    .mvrv-card-main .mvrv-card-value {
+        font-size: 28px;
+    }
+
+    .mvrv-legend {
+        display: flex;
+        gap: 10px;
+    }
+
+    .mvrv-legend-item {
+        font-size: 11px;
+        padding: 2px 8px;
+        border-radius: 4px;
+        background-color: var(--bg-tertiary);
+        border: 1px solid var(--border-color);
+    }
+
+    .mvrv-zone-low { color: #22c55e; }
+    .mvrv-zone-fair { color: #eab308; }
+    .mvrv-zone-high { color: #ef4444; }
+
+    .mvrv-chart-wrapper {
+        flex: 1;
+        min-height: 350px;
+        background-color: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        padding: 12px;
+        position: relative;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .mvrv-chart-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 8px;
+        flex-shrink: 0;
+        flex-wrap: wrap;
+        gap: 6px;
+    }
+
+    .mvrv-chart-header h3 {
+        font-size: 14px;
+        color: var(--text-primary);
+        margin: 0;
+    }
+
+    .mvrv-chart {
+        flex: 1;
+        min-height: 280px;
+    }
+
+    .mvrv-tooltip {
+        display: none;
+        position: absolute;
+        top: 50px;
+        left: 16px;
+        background-color: rgba(20, 20, 20, 0.9);
+        border: 1px solid var(--border-light);
+        border-radius: 6px;
+        padding: 8px 12px;
+        font-size: 12px;
+        color: var(--text-primary);
+        z-index: 10;
+        pointer-events: none;
+        line-height: 1.6;
+    }
+
+    .mvrv-info {
+        background-color: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        padding: 14px 18px;
+        flex-shrink: 0;
+    }
+
+    .mvrv-info h3 {
+        font-size: 14px;
+        color: var(--text-primary);
+        margin-bottom: 8px;
+    }
+
+    .mvrv-info p {
+        font-size: 12px;
+        color: var(--text-secondary);
+        margin-bottom: 6px;
+        line-height: 1.6;
+    }
+
+    .mvrv-formula {
+        font-family: 'Courier New', monospace;
+        background-color: var(--bg-tertiary);
+        padding: 6px 12px;
+        border-radius: 4px;
+        border: 1px solid var(--border-color);
+        color: var(--text-primary) !important;
+        font-weight: 500;
+    }
+
+    .mvrv-info ul {
+        list-style: none;
+        padding: 0;
+        margin: 8px 0;
+    }
+
+    .mvrv-info ul li {
+        font-size: 12px;
+        color: var(--text-secondary);
+        margin-bottom: 4px;
+        padding-left: 16px;
+        position: relative;
+    }
+
+    .mvrv-info ul li::before {
+        content: '•';
+        position: absolute;
+        left: 4px;
+        color: var(--text-muted);
+    }
+
+    .mvrv-warning {
+        color: var(--text-muted) !important;
+        font-size: 11px !important;
+        margin-top: 8px !important;
+    }
+
+    @media (max-width: 768px) {
+        .mvrv-container {
+            padding: 0 12px;
+        }
+
+        .mvrv-cards {
+            flex-wrap: wrap;
+        }
+
+        .mvrv-card {
+            flex: 1 1 calc(50% - 5px);
+            min-width: calc(50% - 5px);
+        }
+
+        .mvrv-card-main {
+            flex: 1 1 100%;
+        }
+
+        .mvrv-legend {
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .mvrv-chart-wrapper {
+            min-height: 300px;
+        }
+    }
+
+    /* ==================== Dashboard 主页样式 ==================== */
+
+    .dashboard-section {
+        flex: 1;
+        min-width: 0;
+        overflow-y: auto;
+        overflow-x: hidden;
+    }
+
+    .dashboard-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px 24px;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .dashboard-hero {
+        text-align: center;
+        padding: 40px 0 32px;
+    }
+
+    .dashboard-main-title {
+        font-size: 28px;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin: 0 0 8px;
+    }
+
+    .dashboard-main-subtitle {
+        font-size: 14px;
+        color: var(--text-muted);
+        margin: 0;
+    }
+
+    .dashboard-category {
+        margin-bottom: 32px;
+    }
+
+    .dashboard-category-header {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        margin-bottom: 16px;
+    }
+
+    .dashboard-category-title {
+        font-size: 18px;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin: 0;
+        padding-left: 12px;
+        border-left: 3px solid var(--green-primary);
+    }
+
+    .dashboard-update-time {
+        font-size: 12px;
+        color: var(--text-muted);
+    }
+
+    .dashboard-cards {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 16px;
+    }
+
+    .dashboard-card {
+        background-color: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        padding: 20px;
+        cursor: pointer;
+        transition: all 0.25s ease;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .dashboard-card:hover {
+        border-color: var(--border-light);
+        background-color: var(--bg-hover);
+        transform: translateY(-2px);
+    }
+
+    .dash-card-header {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .dash-card-name {
+        font-size: 17px;
+        font-weight: 700;
+        color: var(--text-primary);
+    }
+
+    .dash-card-live {
+        font-size: 10px;
+        font-weight: 600;
+        color: var(--green-primary);
+        background: rgba(34, 197, 94, 0.12);
+        padding: 2px 8px;
+        border-radius: 4px;
+        letter-spacing: 0.5px;
+    }
+
+    .dash-card-desc {
+        font-size: 12px;
+        color: var(--text-muted);
+        line-height: 1.5;
+        min-height: 36px;
+    }
+
+    .dash-card-body {
+        padding: 8px 0;
+    }
+
+    .dash-card-metric {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+    }
+
+    .dash-card-value {
+        font-size: 28px;
+        font-weight: 700;
+        color: var(--text-primary);
+        font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+    }
+
+    .dash-card-label {
+        font-size: 11px;
+        color: var(--text-muted);
+    }
+
+    .dash-card-footer {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding-top: 8px;
+        border-top: 1px solid var(--border-color);
+    }
+
+    .dash-card-status {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .dash-status-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: var(--text-muted);
+        flex-shrink: 0;
+    }
+
+    .dash-status-text {
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--text-primary);
+    }
+
+    .dash-card-link {
+        font-size: 12px;
+        color: var(--green-primary);
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        opacity: 0;
+        transition: opacity 0.2s;
+    }
+
+    .dashboard-card:hover .dash-card-link {
+        opacity: 1;
+    }
+
+    /* Dashboard 骨架屏 */
+    .dash-card-value.skeleton {
+        background: linear-gradient(90deg, var(--bg-tertiary) 25%, var(--bg-hover) 50%, var(--bg-tertiary) 75%);
+        background-size: 200% 100%;
+        animation: shimmer 1.5s infinite;
+        border-radius: 4px;
+        color: transparent;
+        user-select: none;
+    }
+
+    @keyframes shimmer {
+        0% { background-position: -200% 0; }
+        100% { background-position: 200% 0; }
+    }
+
+    @media (max-width: 768px) {
+        .dashboard-container {
+            padding: 12px;
+        }
+
+        .dashboard-cards {
+            grid-template-columns: 1fr;
+        }
+
+        .dashboard-hero {
+            padding: 24px 0 20px;
+        }
+
+        .dashboard-main-title {
+            font-size: 22px;
+        }
+
+        .dashboard-category-title {
+            font-size: 16px;
+        }
     }
 </style> 

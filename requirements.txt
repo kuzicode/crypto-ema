@@ -1,5 +1,6 @@
-flask
-pandas
-matplotlib
-requests
-python-dotenv
+flask==3.1.1
+pandas==2.3.0
+matplotlib==3.10.3
+requests==2.32.4
+python-dotenv==1.2.1
+numpy==2.3.0

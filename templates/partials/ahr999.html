@@ -1,0 +1,83 @@
+<div id="ahr999-page" class="page-content">
+    <div class="ahr999-section">
+        <div class="ahr999-container">
+            <!-- 数据卡片区 -->
+            <div class="ahr999-cards">
+                <div class="ahr999-card ahr999-card-main">
+                    <div class="ahr999-card-label">当前值</div>
+                    <div class="ahr999-card-value" id="ahr999-value">—</div>
+                    <div class="ahr999-card-sub" id="ahr999-zone">—</div>
+                </div>
+                <div class="ahr999-card">
+                    <div class="ahr999-card-label">BTC 价格</div>
+                    <div class="ahr999-card-value" id="ahr999-price">—</div>
+                </div>
+                <div class="ahr999-card">
+                    <div class="ahr999-card-label">200日定投成本</div>
+                    <div class="ahr999-card-value" id="ahr999-cost">—</div>
+                </div>
+                <div class="ahr999-card">
+                    <div class="ahr999-card-label">拟合价格</div>
+                    <div class="ahr999-card-value" id="ahr999-fitted">—</div>
+                </div>
+                <div class="ahr999-card ahr999-card-advice">
+                    <div class="ahr999-card-label">操作建议</div>
+                    <div class="ahr999-card-value" id="ahr999-suggestion">—</div>
+                    <div class="ahr999-card-sub">仅供参考</div>
+                </div>
+            </div>
+
+            <!-- 图表区 -->
+            <div class="ahr999-chart-wrapper">
+                <div class="ahr999-chart-header">
+                    <div class="chart-header-left">
+                        <h3>AHR999 历史走势</h3>
+                        <div class="ahr999-legend">
+                            <span class="ahr999-legend-item ahr999-zone-buy">&lt; 0.45 抄底区</span>
+                            <span class="ahr999-legend-item ahr999-zone-dca">0.45 ~ 1.2 定投区</span>
+                            <span class="ahr999-legend-item ahr999-zone-wait">&gt; 1.2 观望区</span>
+                        </div>
+                    </div>
+                    <div class="chart-header-right">
+                        <div class="chart-toggles">
+                            <button class="chart-toggle-btn" id="toggle-ahr999-btn" data-active="true">
+                                <span class="toggle-dot" style="background:#3b82f6"></span>AHR999
+                            </button>
+                            <button class="chart-toggle-btn" id="toggle-price-btn" data-active="true">
+                                <span class="toggle-dot" style="background:#e5e5e5"></span>BTC价格
+                            </button>
+                            <button class="chart-toggle-btn" id="toggle-cost-btn" data-active="false">
+                                <span class="toggle-dot" style="background:#a855f7"></span>200日成本
+                            </button>
+                            <button class="chart-toggle-btn" id="toggle-fitted-btn" data-active="false">
+                                <span class="toggle-dot" style="background:#38bdf8"></span>拟合价格
+                            </button>
+                        </div>
+                        <button class="refresh-btn" id="refresh-ahr999-btn">
+                            <i class="fas fa-sync-alt"></i> 刷新
+                        </button>
+                    </div>
+                </div>
+                <div id="ahr999-chart" class="ahr999-chart"></div>
+                <div id="ahr999-loading" class="loading" style="display: none;">
+                    <i class="fas fa-spinner fa-spin"></i>
+                    <p>加载 AHR999 数据中...</p>
+                </div>
+                <div id="ahr999-tooltip" class="ahr999-tooltip"></div>
+            </div>
+
+            <!-- 指标说明 -->
+            <div class="ahr999-info">
+                <h3>指标说明</h3>
+                <p>AHR999 用于 BTC 长期价值评估，通过对比当前市价与持币者平均成本及链上估值模型，衡量市场整体的高估或低估程度。</p>
+                <p class="ahr999-formula">AHR999 = (Price / 200日定投成本) × (Price / 币龄估值)</p>
+                <ul>
+                    <li><span class="ahr999-zone-buy">AHR999 &lt; 0.45</span> — 价格显著低于长期均值与模型估值，属于历史性低位区间</li>
+                    <li><span class="ahr999-zone-dca">0.45 ≤ AHR999 ≤ 1.2</span> — 价格处于合理估值范围内，适合分批建仓策略</li>
+                    <li><span class="ahr999-zone-wait">AHR999 &gt; 1.2</span> — 价格高于长期估值水平，追高风险上升，宜谨慎对待</li>
+                </ul>
+                <p class="ahr999-warning">⚠️ 任何单一指标都有其适用边界。该指标基于历史统计规律构建，不代表未来市场必然重复相同走势，请结合多维度信息独立判断。</p>
+            </div>
+        </div>
+    </div>
+</div>

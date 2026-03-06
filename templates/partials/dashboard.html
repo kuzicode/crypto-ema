@@ -1,0 +1,116 @@
+<div id="dashboard-page" class="page-content active">
+    <div class="dashboard-section">
+        <div class="dashboard-container">
+            <div class="dashboard-hero">
+                <h1 class="dashboard-main-title">加密货币数据分析</h1>
+                <p class="dashboard-main-subtitle">指标分析和追踪</p>
+            </div>
+
+            <!-- 栏目一：币种MA分析 -->
+            <div class="dashboard-category">
+                <h3 class="dashboard-category-title">币种MA分析</h3>
+                <div class="dashboard-cards">
+                    <!-- MA指标查询 卡片 -->
+                    <div class="dashboard-card" id="dash-card-indicator" data-target="indicator">
+                        <div class="dash-card-header">
+                            <span class="dash-card-name">MA指标查询</span>
+                        </div>
+                        <p class="dash-card-desc">多均线技术分析，直观判断币种所处的趋势阶段。</p>
+                        <div class="dash-card-body">
+                            <div class="dash-card-metric">
+                                <span class="dash-card-value" style="font-size:20px;">技术分析</span>
+                                <span class="dash-card-label">多币种 MA 线</span>
+                            </div>
+                        </div>
+                        <div class="dash-card-footer">
+                            <div class="dash-card-status">
+                                <span class="dash-status-dot" style="background:#3b82f6;"></span>
+                                <span class="dash-status-text">图表工具</span>
+                            </div>
+                            <span class="dash-card-link">查看详情 <i class="fas fa-arrow-right"></i></span>
+                        </div>
+                    </div>
+
+                    <!-- MA异动提醒 卡片 -->
+                    <div class="dashboard-card" id="dash-card-price-alert" data-target="price_alert">
+                        <div class="dash-card-header">
+                            <span class="dash-card-name">MA异动提醒</span>
+                        </div>
+                        <p class="dash-card-desc">实时监控币价突破关键均线位置，及时推送异动通知。</p>
+                        <div class="dash-card-body">
+                            <div class="dash-card-metric">
+                                <span class="dash-card-value" style="font-size:20px;">异动监控</span>
+                                <span class="dash-card-label">均线突破提醒</span>
+                            </div>
+                        </div>
+                        <div class="dash-card-footer">
+                            <div class="dash-card-status">
+                                <span class="dash-status-dot" style="background:#f59e0b;"></span>
+                                <span class="dash-status-text">提醒工具</span>
+                            </div>
+                            <span class="dash-card-link">查看详情 <i class="fas fa-arrow-right"></i></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 栏目二：BTC周期 -->
+            <div class="dashboard-category">
+                <div class="dashboard-category-header">
+                    <h3 class="dashboard-category-title">BTC周期</h3>
+                    <span class="dashboard-update-time" id="dashboard-update-time"></span>
+                </div>
+                <div class="dashboard-cards">
+                    <!-- AHR999 卡片 -->
+                    <div class="dashboard-card" id="dash-card-ahr999" data-target="ahr999">
+                        <div class="dash-card-header">
+                            <span class="dash-card-name">AHR999</span>
+                            <span class="dash-card-live">LIVE</span>
+                        </div>
+                        <p class="dash-card-desc">比特币定投参考指标，综合成本与拟合价格判断时机。</p>
+                        <div class="dash-card-body">
+                            <div class="dash-card-metric">
+                                <span class="dash-card-value" id="dash-ahr999-value">—</span>
+                                <span class="dash-card-label">当前值</span>
+                            </div>
+                        </div>
+                        <div class="dash-card-footer">
+                            <div class="dash-card-status">
+                                <span class="dash-status-dot" id="dash-ahr999-dot"></span>
+                                <span class="dash-status-text" id="dash-ahr999-status">—</span>
+                            </div>
+                            <span class="dash-card-link">查看详情 <i class="fas fa-arrow-right"></i></span>
+                        </div>
+                    </div>
+
+                    <!-- MVRV 卡片 -->
+                    <div class="dashboard-card" id="dash-card-mvrv" data-target="mvrv">
+                        <div class="dash-card-header">
+                            <span class="dash-card-name">MVRV</span>
+                            <span class="dash-card-live">LIVE</span>
+                        </div>
+                        <p class="dash-card-desc">市值与实现价值比率，判断比特币周期顶底位置。</p>
+                        <div class="dash-card-body">
+                            <div class="dash-card-metric">
+                                <span class="dash-card-value" id="dash-mvrv-value">—</span>
+                                <span class="dash-card-label">当前值</span>
+                            </div>
+                        </div>
+                        <div class="dash-card-footer">
+                            <div class="dash-card-status">
+                                <span class="dash-status-dot" id="dash-mvrv-dot"></span>
+                                <span class="dash-status-text" id="dash-mvrv-status">—</span>
+                            </div>
+                            <span class="dash-card-link">查看详情 <i class="fas fa-arrow-right"></i></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="dashboard-loading" class="loading" style="display: none;">
+                <i class="fas fa-spinner fa-spin"></i>
+                <p>加载指标数据中...</p>
+            </div>
+        </div>
+    </div>
+</div>

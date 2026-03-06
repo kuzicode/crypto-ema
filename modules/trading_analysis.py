@@ -1,6 +1,7 @@
 import requests
 import logging
 import datetime
+import numpy as np
 import pandas as pd
 import matplotlib
 matplotlib.use('Agg')
@@ -550,4 +551,203 @@ def token_trend(symbol, interval):
             
     except Exception as e:
         logger.error(f"分析 {symbol} 趋势时出错: {e}")
-        return None 
+        return None
+
+
+# BTC 创世区块日期
+BTC_GENESIS_DATE = datetime.date(2009, 1, 3)
+
+# 幂律回归参数（经典拟合）
+AHR999_FIT_A = 5.84
+AHR999_FIT_B = -17.01
+
+
+_ahr999_cache = {"data": None, "timestamp": 0}
+AHR999_CACHE_TTL = 3600  # 秒
+
+
+def calculate_ahr999():
+    """
+    计算 AHR999 指标。
+    拉取 BTCUSDT 日线数据，计算 200 日定投成本、币龄拟合价格和 AHR999 值。
+    
+    Returns:
+        dict: {
+            "current": { "ahr999", "price", "cost_200d", "fitted_price", "suggestion" },
+            "history": [ { "date", "ahr999", "price", "cost_200d", "fitted_price" }, ... ]
+        }
+        None: 计算失败时返回
+    """
+    try:
+        now = time.time()
+        if _ahr999_cache["data"] and (now - _ahr999_cache["timestamp"]) < AHR999_CACHE_TTL:
+            logger.info("AHR999: 使用缓存数据")
+            return _ahr999_cache["data"]
+        klines = get_klines_extended("BTCUSDT", "1d", total_limit=2000)
+        if not klines:
+            logger.error("AHR999: 无法获取 BTC 日线数据")
+            return None
+
+        dates = []
+        closes = []
+        for kline in klines:
+            ts = datetime.datetime.fromtimestamp(kline[0] / 1000).date()
+            dates.append(ts)
+            closes.append(float(kline[4]))
+
+        df = pd.DataFrame({"date": dates, "close": closes})
+        df = df.drop_duplicates(subset="date").sort_values("date").reset_index(drop=True)
+
+        df["cost_200d"] = df["close"].rolling(window=200).mean()
+
+        df["coin_age_days"] = df["date"].apply(lambda d: (d - BTC_GENESIS_DATE).days)
+
+        df["fitted_price"] = df["coin_age_days"].apply(
+            lambda days: 10 ** (AHR999_FIT_A * np.log10(days) + AHR999_FIT_B) if days > 0 else np.nan
+        )
+
+        df["ahr999"] = (df["close"] / df["cost_200d"]) * (df["close"] / df["fitted_price"])
+
+        df_valid = df.dropna(subset=["ahr999"]).copy()
+        if df_valid.empty:
+            logger.error("AHR999: 计算结果为空（数据量不足200天）")
+            return None
+
+        latest = df_valid.iloc[-1]
+        ahr999_val = float(latest["ahr999"])
+
+        if ahr999_val < 0.45:
+            suggestion = "抄底区"
+        elif ahr999_val <= 1.2:
+            suggestion = "定投区"
+        else:
+            suggestion = "观望区"
+
+        current = {
+            "ahr999": round(ahr999_val, 4),
+            "price": round(float(latest["close"]), 2),
+            "cost_200d": round(float(latest["cost_200d"]), 2),
+            "fitted_price": round(float(latest["fitted_price"]), 2),
+            "suggestion": suggestion
+        }
+
+        history = []
+        for _, row in df_valid.iterrows():
+            history.append({
+                "date": row["date"].strftime("%Y-%m-%d"),
+                "ahr999": round(float(row["ahr999"]), 4),
+                "price": round(float(row["close"]), 2),
+                "cost_200d": round(float(row["cost_200d"]), 2),
+                "fitted_price": round(float(row["fitted_price"]), 2)
+            })
+
+        logger.info(f"AHR999 计算完成: 当前值={current['ahr999']}, 建议={suggestion}, 历史数据点={len(history)}")
+        result = {"current": current, "history": history}
+        _ahr999_cache["data"] = result
+        _ahr999_cache["timestamp"] = time.time()
+        return result
+
+    except Exception as e:
+        logger.error(f"计算 AHR999 时出错: {e}")
+        return None
+
+
+BGEOMETRICS_MVRV_URL = "https://bitcoin-data.com/v1/mvrv"
+BGEOMETRICS_PRICE_URL = "https://bitcoin-data.com/v1/btc-price"
+
+# MVRV 缓存：日级数据无需频繁刷新，缓存 1 小时节省 API 配额
+_mvrv_cache = {"data": None, "timestamp": 0}
+MVRV_CACHE_TTL = 3600  # 秒
+
+
+def fetch_mvrv_data():
+    """
+    获取 MVRV 指标数据。
+    数据源: BGeometrics (bitcoin-data.com) 免费 API，无需认证。
+    
+    Returns:
+        dict: {
+            "current": { "mvrv", "price", "status", "percentile" },
+            "history": [ { "date", "mvrv", "price" }, ... ]
+        }
+        None: 获取失败时返回
+    """
+    try:
+        now = time.time()
+        if _mvrv_cache["data"] and (now - _mvrv_cache["timestamp"]) < MVRV_CACHE_TTL:
+            logger.info("MVRV: 使用缓存数据")
+            return _mvrv_cache["data"]
+
+        mvrv_resp = requests.get(BGEOMETRICS_MVRV_URL, timeout=60)
+        mvrv_resp.raise_for_status()
+        mvrv_list = mvrv_resp.json()
+
+        if not mvrv_list:
+            logger.error("MVRV: BGeometrics 返回空数据")
+            return None
+
+        price_map = {}
+        try:
+            price_resp = requests.get(BGEOMETRICS_PRICE_URL, timeout=60)
+            price_resp.raise_for_status()
+            price_list = price_resp.json()
+            if price_list:
+                price_map = {item["d"]: float(item["btcPrice"]) for item in price_list if float(item.get("btcPrice", 0)) > 0}
+        except Exception as e:
+            logger.warning(f"MVRV: 价格数据获取失败，将使用币安补充: {e}")
+
+        all_mvrv_vals = [float(item["mvrv"]) for item in mvrv_list if item.get("mvrv") is not None]
+
+        latest = mvrv_list[-1]
+        latest_mvrv = float(latest["mvrv"])
+        latest_date = latest["d"]
+
+        if latest_mvrv < 1.0:
+            status_text = "低估区"
+        elif latest_mvrv <= 3.0:
+            status_text = "合理区"
+        else:
+            status_text = "高估区"
+
+        percentile = 0
+        if all_mvrv_vals:
+            below_count = sum(1 for v in all_mvrv_vals if v <= latest_mvrv)
+            percentile = round(below_count / len(all_mvrv_vals) * 100, 1)
+
+        latest_price = price_map.get(latest_date)
+        if latest_price is None:
+            klines = get_klines("BTCUSDT", "1d", limit=1)
+            if klines:
+                latest_price = float(klines[-1][4])
+            else:
+                latest_price = 0
+
+        current = {
+            "mvrv": round(latest_mvrv, 4),
+            "price": round(float(latest_price), 2),
+            "status": status_text,
+            "percentile": percentile
+        }
+
+        history = []
+        for item in mvrv_list:
+            date = item.get("d")
+            mvrv_val = item.get("mvrv")
+            if date and mvrv_val is not None:
+                entry = {"date": date, "mvrv": round(float(mvrv_val), 4)}
+                price = price_map.get(date)
+                if price is not None:
+                    entry["price"] = round(price, 2)
+                history.append(entry)
+
+        result = {"current": current, "history": history}
+
+        _mvrv_cache["data"] = result
+        _mvrv_cache["timestamp"] = time.time()
+
+        logger.info(f"MVRV 数据获取完成: 当前值={current['mvrv']}, 状态={status_text}, 分位={percentile}%, 历史数据点={len(history)}")
+        return result
+
+    except Exception as e:
+        logger.error(f"获取 MVRV 数据时出错: {e}")
+        return None
