@@ -1,5 +1,6 @@
 from flask import render_template, jsonify, request
 import logging
+import math
 import concurrent.futures
 from datetime import datetime, timedelta
 from modules.trading_analysis import KlineBot, token_trend, calculate_ahr999, fetch_mvrv_data, fetch_btc_dominance
@@ -35,15 +36,12 @@ def init_routes(app):
             bot = KlineBot(symbol, interval)
             active_bots[bot_key] = bot
             
-            # 获取图表数据
-            img_str, error = bot.generate_plot()
-            
-            if error:
-                return jsonify({'success': False, 'error': error})
-                
+            if bot.indicators.empty:
+                return jsonify({'success': False, 'error': '无法获取数据'})
+
             # 获取市场分析
             market_analysis = bot.generate_market_analysis()
-            
+
             # 获取当前最新价格和MA线值
             latest = bot.indicators.iloc[-1]
             market_info = {
@@ -54,19 +52,36 @@ def init_routes(app):
                 "ma5": float(latest['MA5']),
                 "ma6": float(latest['MA6'])
             }
-            
+
+            # 构建交互式图表数据
+            chart_data = []
+            for _, row in bot.indicators.iterrows():
+                if math.isnan(row.get('MA6', float('nan'))):
+                    continue
+                chart_data.append({
+                    'time': int(row['Time']),
+                    'close': float(row['Close']),
+                    'ma2': float(row['MA2']),
+                    'ma3': float(row['MA3']),
+                    'ma4': float(row['MA4']),
+                    'ma5': float(row['MA5']),
+                    'ma6': float(row['MA6']),
+                    'macd': float(row['MACD']),
+                    'signal': float(row['Signal Line']),
+                    'hist': float(row['MACD Histogram'])
+                })
+
             # 添加当前服务器时间(北京时间)
             current_time = (datetime.utcnow() + timedelta(hours=8)).strftime('%Y-%m-%d %H:%M:%S')
-            
-            logger.info(f"获取了 {symbol} 的最新数据，时间: {current_time}")
-            logger.info(f"MA线价格数据: {market_info}")
-            
+
+            logger.info(f"获取了 {symbol} 的最新数据，时间: {current_time}，共 {len(chart_data)} 条")
+
             return jsonify({
-                'success': True, 
-                'image': img_str,
+                'success': True,
+                'chart_data': chart_data,
                 'market_info': market_info,
                 'analysis': market_analysis,
-                'timestamp': current_time  # 添加时间戳到响应
+                'timestamp': current_time
             })
         except Exception as e:
             logger.error(f"获取图表时出错: {e}")

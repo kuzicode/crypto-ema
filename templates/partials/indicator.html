@@ -43,7 +43,10 @@
         <!-- 图表区域 -->
         <div class="chart-section">
             <div class="chart-container">
-                <img id="chart-image" style="display: none;">
+                <div id="charts-wrapper" style="display:none;position:absolute;top:0;left:0;right:0;bottom:0;flex-direction:column;">
+                    <div id="ma-chart" style="flex:3;min-height:0;width:100%;"></div>
+                    <div id="macd-chart" style="flex:1;min-height:0;width:100%;border-top:1px solid #2a2a2a;"></div>
+                </div>
                 <div class="loading" id="loading" style="display: none;">
                     <i class="fas fa-spinner"></i>
                     <p class="glow">
@@ -102,7 +105,7 @@
                         </div>
                         <div class="data-row">
                             <span class="data-label">
-                                <span class="ma-label" style="color: #e5e5e5;">MA趋势线(MA2)</span>
+                                <span class="ma-label" style="color: #e5e5e5;">趋势线(MA2)</span>
                             </span>
                             <span class="data-value" id="ma2-price">--</span>
                         </div>
