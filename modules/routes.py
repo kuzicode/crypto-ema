@@ -2,7 +2,7 @@ from flask import render_template, jsonify, request
 import logging
 import concurrent.futures
 from datetime import datetime, timedelta
-from modules.trading_analysis import KlineBot, token_trend, calculate_ahr999, fetch_mvrv_data
+from modules.trading_analysis import KlineBot, token_trend, calculate_ahr999, fetch_mvrv_data, fetch_btc_dominance
 
 logger = logging.getLogger(__name__)
 
@@ -141,6 +141,12 @@ def init_routes(app):
         except Exception as e:
             logger.error(f"Dashboard 获取 MVRV 出错: {e}")
             result['mvrv'] = None
+        try:
+            btcd = fetch_btc_dominance()
+            result['btc_dominance'] = btcd['current'] if btcd else None
+        except Exception as e:
+            logger.error(f"Dashboard 获取 BTC Dominance 出错: {e}")
+            result['btc_dominance'] = None
         return jsonify({'success': True, **result})
 
     @app.route('/get_ahr999', methods=['GET'])
@@ -177,6 +183,22 @@ def init_routes(app):
             logger.error(f"获取 MVRV 数据时出错: {e}")
             return jsonify({'success': False, 'error': str(e)})
     
+    @app.route('/get_btc_dominance', methods=['GET'])
+    def get_btc_dominance_route():
+        """获取 BTC Dominance 指标数据"""
+        try:
+            result = fetch_btc_dominance()
+            if result is None:
+                return jsonify({'success': False, 'error': '无法获取 BTC Dominance 数据'})
+            return jsonify({
+                'success': True,
+                'current': result['current'],
+                'history': result['history']
+            })
+        except Exception as e:
+            logger.error(f"获取 BTC Dominance 数据时出错: {e}")
+            return jsonify({'success': False, 'error': str(e)})
+
     @app.route('/get_price_alerts', methods=['GET'])
     def get_price_alerts():
         """获取币价变动提醒记录（从 telegram_alert.json 读取）"""

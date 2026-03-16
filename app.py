@@ -1,7 +1,10 @@
+import os
+from dotenv import load_dotenv
+load_dotenv()  # 必须在所有业务模块导入之前执行
+
 from flask import Flask
 import logging
 from modules.routes import init_routes
-import os
 import time
 from datetime import datetime, timedelta
 

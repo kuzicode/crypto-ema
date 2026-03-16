@@ -1484,7 +1484,7 @@
 
     .dashboard-cards {
         display: grid;
-        grid-template-columns: repeat(2, 1fr);
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
         gap: 16px;
     }
 
@@ -1633,6 +1633,248 @@
 
         .dashboard-category-title {
             font-size: 16px;
+        }
+    }
+
+    /* ==================== BTC Dominance 页面样式 ==================== */
+
+    .btcd-section {
+        flex: 1;
+        min-width: 0;
+        overflow-y: auto;
+        overflow-x: hidden;
+    }
+
+    .btcd-container {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        height: 100%;
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 24px;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .btcd-cards {
+        display: flex;
+        gap: 10px;
+        flex-shrink: 0;
+    }
+
+    .btcd-card {
+        flex: 1;
+        background-color: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        padding: 12px 16px;
+        text-align: center;
+        min-width: 0;
+    }
+
+    .btcd-card-label {
+        font-size: 11px;
+        color: var(--text-muted);
+        margin-bottom: 6px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .btcd-card-value {
+        font-size: 22px;
+        font-weight: 700;
+        color: var(--text-primary);
+        line-height: 1.2;
+    }
+
+    .btcd-card-sub {
+        font-size: 11px;
+        color: var(--text-muted);
+        margin-top: 4px;
+    }
+
+    .btcd-card-main .btcd-card-value {
+        font-size: 28px;
+    }
+
+    .btcd-legend {
+        display: flex;
+        gap: 10px;
+    }
+
+    .btcd-legend-item {
+        font-size: 11px;
+        padding: 2px 8px;
+        border-radius: 4px;
+        background-color: var(--bg-tertiary);
+        border: 1px solid var(--border-color);
+    }
+
+    .btcd-zone-high { color: #3b82f6; }
+    .btcd-zone-fair { color: #eab308; }
+    .btcd-zone-low { color: #22c55e; }
+
+    .btcd-chart-wrapper {
+        flex: 1;
+        min-height: 350px;
+        background-color: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        padding: 12px;
+        position: relative;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .btcd-chart-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 8px;
+        flex-shrink: 0;
+        flex-wrap: wrap;
+        gap: 6px;
+    }
+
+    .btcd-chart-header h3 {
+        font-size: 14px;
+        color: var(--text-primary);
+        margin: 0;
+    }
+
+    .btcd-chart {
+        flex: 1;
+        min-height: 280px;
+    }
+
+    .btcd-period-selector {
+        display: flex;
+        gap: 4px;
+        align-items: center;
+    }
+
+    .btcd-period-btn {
+        background: transparent;
+        border: 1px solid var(--border-color);
+        color: var(--text-secondary);
+        border-radius: 4px;
+        padding: 3px 8px;
+        font-size: 11px;
+        cursor: pointer;
+        transition: all 0.15s ease;
+    }
+
+    .btcd-period-btn:hover {
+        border-color: #3b82f6;
+        color: #3b82f6;
+    }
+
+    .btcd-period-btn.active {
+        background: #3b82f6;
+        border-color: #3b82f6;
+        color: #fff;
+    }
+
+    .btcd-tooltip {
+        display: none;
+        position: absolute;
+        top: 50px;
+        left: 16px;
+        background-color: rgba(20, 20, 20, 0.9);
+        border: 1px solid var(--border-light);
+        border-radius: 6px;
+        padding: 8px 12px;
+        font-size: 12px;
+        color: var(--text-primary);
+        z-index: 10;
+        pointer-events: none;
+        line-height: 1.6;
+    }
+
+    .btcd-info {
+        background-color: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        padding: 14px 18px;
+        flex-shrink: 0;
+    }
+
+    .btcd-info h3 {
+        font-size: 14px;
+        color: var(--text-primary);
+        margin-bottom: 8px;
+    }
+
+    .btcd-info p {
+        font-size: 12px;
+        color: var(--text-secondary);
+        margin-bottom: 6px;
+        line-height: 1.6;
+    }
+
+    .btcd-formula {
+        font-family: 'Courier New', monospace;
+        background-color: var(--bg-tertiary);
+        padding: 6px 12px;
+        border-radius: 4px;
+        border: 1px solid var(--border-color);
+        color: var(--text-primary) !important;
+        font-weight: 500;
+    }
+
+    .btcd-info ul {
+        list-style: none;
+        padding: 0;
+        margin: 8px 0;
+    }
+
+    .btcd-info ul li {
+        font-size: 12px;
+        color: var(--text-secondary);
+        margin-bottom: 4px;
+        padding-left: 16px;
+        position: relative;
+    }
+
+    .btcd-info ul li::before {
+        content: '•';
+        position: absolute;
+        left: 4px;
+        color: var(--text-muted);
+    }
+
+    .btcd-warning {
+        color: var(--text-muted) !important;
+        font-size: 11px !important;
+        margin-top: 8px !important;
+    }
+
+    @media (max-width: 768px) {
+        .btcd-container {
+            padding: 0 12px;
+        }
+
+        .btcd-cards {
+            flex-wrap: wrap;
+        }
+
+        .btcd-card {
+            flex: 1 1 calc(50% - 5px);
+            min-width: calc(50% - 5px);
+        }
+
+        .btcd-card-main {
+            flex: 1 1 100%;
+        }
+
+        .btcd-legend {
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .btcd-chart-wrapper {
+            min-height: 300px;
         }
     }
 </style> 
