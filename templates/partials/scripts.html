@@ -34,7 +34,9 @@
         
         // 元素引用
         const form = document.getElementById('chart-form');
-        const chartImage = document.getElementById('chart-image');
+        const chartsWrapperEl = document.getElementById('charts-wrapper');
+        const maChartEl = document.getElementById('ma-chart');
+        const macdChartEl = document.getElementById('macd-chart');
         const loading = document.getElementById('loading');
         const status = document.getElementById('status');
         const initialMessage = document.getElementById('initial-message');
@@ -111,6 +113,230 @@
             status.classList.toggle('error', isError);
         };
         
+        // MA 图表状态
+        const maState = {
+            chart: null,
+            priceSeries: null,
+            ma2Series: null,
+            ma3Series: null,
+            ma4Series: null,
+            ma5Series: null,
+            ma6Series: null
+        };
+
+        function initMaChart() {
+            if (maState.chart) return;
+            if (!maChartEl || maChartEl.offsetWidth === 0) return;
+
+            const chart = LightweightCharts.createChart(maChartEl, {
+                width: maChartEl.offsetWidth,
+                height: maChartEl.offsetHeight || 400,
+                layout: {
+                    background: { color: '#1e1e1e' },
+                    textColor: '#9ca3af'
+                },
+                grid: {
+                    vertLines: { color: '#2a2a2a' },
+                    horzLines: { color: '#2a2a2a' }
+                },
+                crosshair: { mode: LightweightCharts.CrosshairMode.Normal },
+                rightPriceScale: { borderColor: '#2a2a2a', visible: true },
+                timeScale: { borderColor: '#2a2a2a', timeVisible: true },
+                handleScroll: true,
+                handleScale: true
+            });
+
+            maState.priceSeries = chart.addLineSeries({
+                color: '#e5e5e5',
+                lineWidth: 2,
+                title: '价格',
+                priceScaleId: 'right',
+                lastValueVisible: true,
+                priceLineVisible: false
+            });
+            maState.ma2Series = chart.addLineSeries({
+                color: '#e5e5e5',
+                lineWidth: 1,
+                lineStyle: LightweightCharts.LineStyle.Dashed,
+                title: '趋势线',
+                priceScaleId: 'right',
+                lastValueVisible: false,
+                priceLineVisible: false
+            });
+            maState.ma3Series = chart.addLineSeries({
+                color: '#4ade80',
+                lineWidth: 1,
+                lineStyle: LightweightCharts.LineStyle.Dashed,
+                title: '上涨线',
+                priceScaleId: 'right',
+                lastValueVisible: false,
+                priceLineVisible: false
+            });
+            maState.ma4Series = chart.addLineSeries({
+                color: '#22c55e',
+                lineWidth: 1,
+                lineStyle: LightweightCharts.LineStyle.Dashed,
+                title: '强势线',
+                priceScaleId: 'right',
+                lastValueVisible: false,
+                priceLineVisible: false
+            });
+            maState.ma5Series = chart.addLineSeries({
+                color: '#f87171',
+                lineWidth: 1,
+                lineStyle: LightweightCharts.LineStyle.Dashed,
+                title: '下跌线',
+                priceScaleId: 'right',
+                lastValueVisible: false,
+                priceLineVisible: false
+            });
+            maState.ma6Series = chart.addLineSeries({
+                color: '#ef4444',
+                lineWidth: 1,
+                lineStyle: LightweightCharts.LineStyle.Dashed,
+                title: '超跌线',
+                priceScaleId: 'right',
+                lastValueVisible: false,
+                priceLineVisible: false
+            });
+
+            maState.chart = chart;
+        }
+
+        function renderMaChart(chartData) {
+            if (!maState.chart) initMaChart();
+            if (!maState.chart || !chartData || chartData.length === 0) return;
+
+            var priceData = [], ma2Data = [], ma3Data = [], ma4Data = [], ma5Data = [], ma6Data = [];
+            chartData.forEach(function(d) {
+                var t = d.time;
+                priceData.push({ time: t, value: d.close });
+                ma2Data.push({ time: t, value: d.ma2 });
+                ma3Data.push({ time: t, value: d.ma3 });
+                ma4Data.push({ time: t, value: d.ma4 });
+                ma5Data.push({ time: t, value: d.ma5 });
+                ma6Data.push({ time: t, value: d.ma6 });
+            });
+
+            maState.priceSeries.setData(priceData);
+            maState.ma2Series.setData(ma2Data);
+            maState.ma3Series.setData(ma3Data);
+            maState.ma4Series.setData(ma4Data);
+            maState.ma5Series.setData(ma5Data);
+            maState.ma6Series.setData(ma6Data);
+            // 默认显示最近 6 个月（4h 周期约 1080 根），可向左滚动查看更多历史
+            var total = priceData.length;
+            var defaultBars = 1080; // 6 months * 30 days * 6 bars/day
+            maState.chart.timeScale().setVisibleLogicalRange({
+                from: Math.max(0, total - defaultBars),
+                to: total - 1
+            });
+        }
+
+        function resizeMaChart() {
+            if (maState.chart && maChartEl) {
+                maState.chart.applyOptions({
+                    width: maChartEl.offsetWidth,
+                    height: maChartEl.offsetHeight || 300
+                });
+            }
+            if (macdState.chart && macdChartEl) {
+                macdState.chart.applyOptions({
+                    width: macdChartEl.offsetWidth,
+                    height: macdChartEl.offsetHeight || 120
+                });
+            }
+        }
+
+        // MACD 图表状态
+        const macdState = {
+            chart: null,
+            macdSeries: null,
+            signalSeries: null,
+            histSeries: null
+        };
+
+        function initMacdChart() {
+            if (macdState.chart) return;
+            if (!macdChartEl || macdChartEl.offsetWidth === 0) return;
+
+            const chart = LightweightCharts.createChart(macdChartEl, {
+                width: macdChartEl.offsetWidth,
+                height: macdChartEl.offsetHeight || 120,
+                layout: {
+                    background: { color: '#1e1e1e' },
+                    textColor: '#9ca3af'
+                },
+                grid: {
+                    vertLines: { color: '#2a2a2a' },
+                    horzLines: { color: '#2a2a2a' }
+                },
+                crosshair: { mode: LightweightCharts.CrosshairMode.Normal },
+                rightPriceScale: { borderColor: '#2a2a2a', visible: true },
+                timeScale: { borderColor: '#2a2a2a', timeVisible: true },
+                handleScroll: true,
+                handleScale: true
+            });
+
+            macdState.histSeries = chart.addHistogramSeries({
+                priceScaleId: 'right',
+                lastValueVisible: false,
+                priceLineVisible: false
+            });
+            macdState.macdSeries = chart.addLineSeries({
+                color: '#3b82f6',
+                lineWidth: 1,
+                title: 'MACD',
+                priceScaleId: 'right',
+                lastValueVisible: true,
+                priceLineVisible: false
+            });
+            macdState.signalSeries = chart.addLineSeries({
+                color: '#a855f7',
+                lineWidth: 1,
+                title: 'Signal',
+                priceScaleId: 'right',
+                lastValueVisible: true,
+                priceLineVisible: false
+            });
+
+            // 双向时间轴同步
+            var syncing = false;
+            maState.chart.timeScale().subscribeVisibleLogicalRangeChange(function(range) {
+                if (syncing || !range) return;
+                syncing = true;
+                chart.timeScale().setVisibleLogicalRange(range);
+                syncing = false;
+            });
+            chart.timeScale().subscribeVisibleLogicalRangeChange(function(range) {
+                if (syncing || !range) return;
+                syncing = true;
+                maState.chart.timeScale().setVisibleLogicalRange(range);
+                syncing = false;
+            });
+
+            macdState.chart = chart;
+        }
+
+        function renderMacdChart(chartData) {
+            if (!macdState.chart) initMacdChart();
+            if (!macdState.chart || !chartData || chartData.length === 0) return;
+
+            var macdData = [], signalData = [], histData = [];
+            chartData.forEach(function(d) {
+                var t = d.time;
+                macdData.push({ time: t, value: d.macd });
+                signalData.push({ time: t, value: d.signal });
+                histData.push({ time: t, value: d.hist, color: d.hist >= 0 ? '#22c55e' : '#ef4444' });
+            });
+
+            macdState.histSeries.setData(histData);
+            macdState.macdSeries.setData(macdData);
+            macdState.signalSeries.setData(signalData);
+        }
+
+        window.addEventListener('resize', debounce(resizeMaChart, 200));
+
         // 获取图表数据
         const fetchChartData = () => {
             // 验证输入
@@ -125,8 +351,27 @@
             if (now - currentState.lastFetchTime < 2000) return;
             currentState.lastFetchTime = now;
             
+            // 重置图表（切换币种时销毁旧图表）
+            if (maState.chart) {
+                maState.chart.remove();
+                maState.chart = null;
+                maState.priceSeries = null;
+                maState.ma2Series = null;
+                maState.ma3Series = null;
+                maState.ma4Series = null;
+                maState.ma5Series = null;
+                maState.ma6Series = null;
+            }
+            if (macdState.chart) {
+                macdState.chart.remove();
+                macdState.chart = null;
+                macdState.macdSeries = null;
+                macdState.signalSeries = null;
+                macdState.histSeries = null;
+            }
+
             // 显示加载状态
-            chartImage.style.display = 'none';
+            chartsWrapperEl.style.display = 'none';
             initialMessage.style.display = 'none';
             loading.style.display = 'block';
             setStatus('获取数据中...');
@@ -153,9 +398,13 @@
                 generateBtn.disabled = false;
                 
                 if (data.success) {
-                    // 显示图表
-                    chartImage.src = 'data:image/png;base64,' + data.image;
-                    chartImage.style.display = 'block';
+                    // 显示交互式图表
+                    chartsWrapperEl.style.display = 'flex';
+                    initMaChart();
+                    initMacdChart();
+                    renderMaChart(data.chart_data);
+                    renderMacdChart(data.chart_data);
+                    setTimeout(resizeMaChart, 100);
                     setStatus('图表生成成功！');
                     
                     // 更新币种分析信息
@@ -206,7 +455,7 @@
                     }
                 } else {
                     // 显示错误
-                    chartImage.style.display = 'none';
+                    chartsWrapperEl.style.display = 'none';
                     initialMessage.style.display = 'block';
                     setStatus('错误：' + data.error, true);
                     coinAnalysis.style.display = 'none';
@@ -215,7 +464,7 @@
             .catch(error => {
                 // 处理异常
                 loading.style.display = 'none';
-                chartImage.style.display = 'none';
+                chartsWrapperEl.style.display = 'none';
                 initialMessage.style.display = 'block';
                 generateBtn.disabled = false;
                 
