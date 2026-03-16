@@ -1,3 +1,4 @@
+import os
 import requests
 import logging
 import datetime
@@ -750,4 +751,225 @@ def fetch_mvrv_data():
 
     except Exception as e:
         logger.error(f"获取 MVRV 数据时出错: {e}")
+        return None
+
+
+# ==================== BTC Dominance ====================
+
+COINGECKO_GLOBAL_URL = "https://api.coingecko.com/api/v3/global"
+COINGECKO_COIN_CHART_URL = "https://api.coingecko.com/api/v3/coins/{coin_id}/market_chart"
+CRYPTOCOMPARE_HISTO_URL = "https://min-api.cryptocompare.com/data/v2/histoday"
+
+# BTC+ETH 近似流通量（用于历史市值估算）
+_BTC_SUPPLY = 19_500_000
+_ETH_SUPPLY = 120_000_000
+
+def _coingecko_headers():
+    """返回 CoinGecko 请求头，有 API key 时自动携带。"""
+    key = os.environ.get("COINGECKO_API_KEY", "").strip()
+    if key:
+        return {"x-cg-demo-api-key": key}
+    logger.warning("CoinGecko: 未找到 COINGECKO_API_KEY，请求可能被拒绝（401）")
+    return {}
+
+_btcd_cache = {"data": None, "timestamp": 0}
+BTCD_CACHE_TTL = 3600
+
+# 启动时输出 key 状态（只显示前8位，保护隐私）
+_cg_key_check = os.environ.get("COINGECKO_API_KEY", "").strip()
+if _cg_key_check:
+    logger.info(f"CoinGecko API key 已加载: {_cg_key_check[:8]}... (长度={len(_cg_key_check)})")
+else:
+    logger.warning("CoinGecko API key 未找到，BTC Dominance 请求将使用无密钥模式")
+
+def _fetch_cc_prices(symbol, limit=1460):
+    """从 CryptoCompare 获取历史日收盘价（免费，无需 API key，最多约 2000 天）。"""
+    try:
+        resp = requests.get(CRYPTOCOMPARE_HISTO_URL,
+                            params={"fsym": symbol, "tsym": "USD", "limit": limit},
+                            timeout=30)
+        if resp.status_code == 200:
+            data = resp.json().get("Data", {}).get("Data", [])
+            return {
+                datetime.datetime.utcfromtimestamp(item["time"]).strftime("%Y-%m-%d"): item["close"]
+                for item in data if item.get("close", 0) > 0
+            }
+        logger.warning(f"CryptoCompare {symbol} 价格获取失败: HTTP {resp.status_code}")
+    except Exception as e:
+        logger.warning(f"CryptoCompare {symbol} 请求异常: {e}")
+    return {}
+
+
+def _fetch_coin_market_chart(coin_id, days=365):
+    """获取指定币种的历史市值数据，返回 {day_key: market_cap} 字典。"""
+    url = COINGECKO_COIN_CHART_URL.format(coin_id=coin_id)
+    try:
+        resp = requests.get(url, params={"vs_currency": "usd", "days": str(days)},
+                            headers=_coingecko_headers(), timeout=60)
+        if resp.status_code == 200:
+            data = resp.json()
+            mcap_map = {}
+            for item in data.get("market_caps", []):
+                day_key = datetime.datetime.utcfromtimestamp(item[0] / 1000).strftime("%Y-%m-%d")
+                mcap_map[day_key] = item[1]
+            logger.info(f"BTC Dominance: 获取 {coin_id} 市值历史成功, {len(mcap_map)} 天")
+            return mcap_map, data.get("prices", [])
+        else:
+            try:
+                err = resp.json()
+            except Exception:
+                err = resp.text[:200]
+            logger.warning(f"BTC Dominance: {coin_id} 市值历史失败 HTTP {resp.status_code} | {err}")
+            return {}, []
+    except Exception as e:
+        logger.warning(f"BTC Dominance: {coin_id} 市值历史请求异常: {e}")
+        return {}, []
+
+
+def fetch_btc_dominance():
+    """
+    获取 BTCDOM 数据（4年日线）。
+
+    数据来源合并策略：
+    - 近 365 天：CoinGecko Demo API（BTC+ETH 实际市值 → 精确 dominance）
+    - 1~4 年前：CryptoCompare 免费价格数据（BTC+ETH 价格×近似供应量 → 估算 dominance）
+
+    两段数据在 365 天边界做均值归一化，保证趋势连续。
+
+    Returns:
+        dict: {
+            "current": { "dominance", "price", "status", "market_cap", "total_market_cap" },
+            "history": [ { "date", "dominance", "price" }, ... ]
+        }
+        None: 获取失败时返回
+    """
+    try:
+        now_ts = time.time()
+        if _btcd_cache["data"] and (now_ts - _btcd_cache["timestamp"]) < BTCD_CACHE_TTL:
+            logger.info("BTCDOM: 使用缓存数据")
+            return _btcd_cache["data"]
+
+        # ── 1. 当前全局数据 ────────────────────────────────────────────
+        global_resp = requests.get(COINGECKO_GLOBAL_URL, headers=_coingecko_headers(), timeout=30)
+        if global_resp.status_code != 200:
+            try:
+                err_body = global_resp.json()
+            except Exception:
+                err_body = global_resp.text[:200]
+            logger.error(f"BTCDOM: /global 请求失败 HTTP {global_resp.status_code} | {err_body}")
+            return None
+        global_data = global_resp.json()["data"]
+        btc_dominance = global_data["market_cap_percentage"]["btc"]
+        eth_dominance = global_data["market_cap_percentage"].get("eth", 0)
+        total_market_cap = global_data["total_market_cap"]["usd"]
+        combined_dom = btc_dominance + eth_dominance  # ≈ 65~70%
+
+        # ── 2. CoinGecko 近 365 天（精确市值） ────────────────────────
+        btc_mcap_map, btc_prices_raw = _fetch_coin_market_chart("bitcoin", days=365)
+        eth_mcap_map, _ = _fetch_coin_market_chart("ethereum", days=365)
+
+        cg_price_map = {
+            datetime.datetime.utcfromtimestamp(item[0] / 1000).strftime("%Y-%m-%d"): item[1]
+            for item in btc_prices_raw
+        }
+
+        cg_dom_map = {}  # date → dominance（CoinGecko 精确值）
+        for day_key in btc_mcap_map:
+            btc_m = btc_mcap_map[day_key]
+            if btc_m <= 0:
+                continue
+            eth_m = eth_mcap_map.get(day_key, 0)
+            if eth_m > 0 and combined_dom > 0:
+                total_est = (btc_m + eth_m) / (combined_dom / 100)
+            elif btc_dominance > 0:
+                total_est = btc_m / (btc_dominance / 100)
+            else:
+                continue
+            cg_dom_map[day_key] = round((btc_m / total_est) * 100, 2)
+
+        if not cg_dom_map:
+            logger.error("BTCDOM: CoinGecko 无法获取市值数据")
+            return None
+
+        # ── 3. CryptoCompare 4 年历史价格（免费估算） ──────────────────
+        cc_btc = _fetch_cc_prices("BTC", limit=1460)
+        cc_eth = _fetch_cc_prices("ETH", limit=1460)
+
+        cc_dom_map = {}  # date → dominance（估算值）
+        for day_key, btc_p in cc_btc.items():
+            eth_p = cc_eth.get(day_key, 0)
+            if btc_p <= 0:
+                continue
+            btc_m = btc_p * _BTC_SUPPLY
+            eth_m = eth_p * _ETH_SUPPLY if eth_p > 0 else 0
+            if eth_m > 0 and combined_dom > 0:
+                total_est = (btc_m + eth_m) / (combined_dom / 100)
+            elif btc_dominance > 0:
+                total_est = btc_m / (btc_dominance / 100)
+            else:
+                continue
+            cc_dom_map[day_key] = round((btc_m / total_est) * 100, 2)
+
+        # ── 4. 归一化：用重叠期均值修正 CC 偏差 ───────────────────────
+        overlap = sorted(set(cg_dom_map) & set(cc_dom_map))
+        if len(overlap) >= 7:
+            cg_avg = sum(cg_dom_map[d] for d in overlap) / len(overlap)
+            cc_avg = sum(cc_dom_map[d] for d in overlap) / len(overlap)
+            bias = cg_avg - cc_avg  # CC 系统性偏差修正量
+        else:
+            bias = 0.0
+
+        # ── 5. 合并数据：CC 填历史，CG 覆盖近期 ─────────────────────
+        all_dates = sorted(set(cc_dom_map) | set(cg_dom_map))
+        history = []
+        for day_key in all_dates:
+            if day_key in cg_dom_map:
+                dom = cg_dom_map[day_key]
+            elif day_key in cc_dom_map:
+                dom = round(cc_dom_map[day_key] + bias, 2)
+            else:
+                continue
+            entry = {"date": day_key, "dominance": dom}
+            price = cg_price_map.get(day_key) or cc_btc.get(day_key)
+            if price:
+                entry["price"] = round(price, 2)
+            history.append(entry)
+
+        if not history:
+            logger.error("BTCDOM: 合并后数据为空")
+            return None
+
+        # 最后一条修正为实时值
+        history[-1]["dominance"] = round(btc_dominance, 2)
+
+        if btc_dominance > 60:
+            status_text = "BTC主导"
+        elif btc_dominance >= 40:
+            status_text = "均衡"
+        else:
+            status_text = "山寨季"
+
+        latest_price = history[-1].get("price", 0)
+        current = {
+            "dominance": round(btc_dominance, 2),
+            "price": round(latest_price, 2),
+            "status": status_text,
+            "market_cap": round(total_market_cap * btc_dominance / 100, 0),
+            "total_market_cap": round(total_market_cap, 0)
+        }
+
+        result = {"current": current, "history": history}
+        _btcd_cache["data"] = result
+        _btcd_cache["timestamp"] = time.time()
+
+        dom_vals = [h["dominance"] for h in history]
+        logger.info(
+            f"BTCDOM 获取完成: 当前={current['dominance']}%, "
+            f"历史范围={min(dom_vals):.2f}%~{max(dom_vals):.2f}%, "
+            f"数据点={len(history)} (CC偏差修正={bias:+.2f}%)"
+        )
+        return result
+
+    except Exception as e:
+        logger.error(f"获取 BTCDOM 数据时出错: {e}")
         return None

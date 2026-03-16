@@ -3,7 +3,7 @@
         // 导航功能
         const pages = document.querySelectorAll('.page-content');
         const backHomeBtn = document.querySelector('.nav-back-home');
-        const validPages = ['dashboard', 'indicator', 'ahr999', 'mvrv', 'price_alert'];
+        const validPages = ['dashboard', 'indicator', 'ahr999', 'mvrv', 'btc_dominance', 'price_alert'];
 
         function navigateTo(pageKey) {
             var targetPageId = pageKey + '-page';
@@ -585,6 +585,12 @@
                     else if (typeof resizeMvrvChart === 'function') resizeMvrvChart();
                 }, 100);
             }
+            if (page === 'btc_dominance') {
+                setTimeout(function() {
+                    if (typeof btcdState !== 'undefined' && !btcdState.loaded) fetchBtcdData();
+                    else if (typeof resizeBtcdChart === 'function') resizeBtcdChart();
+                }, 100);
+            }
         }
 
         // ==================== Dashboard 主页功能 ====================
@@ -602,6 +608,12 @@
             if (val < 1.0) return '#22c55e';
             if (val <= 3.0) return '#eab308';
             return '#ef4444';
+        }
+
+        function getBtcdStatusColor(val) {
+            if (val > 60) return '#3b82f6';
+            if (val >= 40) return '#eab308';
+            return '#22c55e';
         }
 
         function updateDashboardCards(data) {
@@ -639,6 +651,23 @@
                 mDot.style.background = mColor;
                 mStatus.textContent = data.mvrv.status;
                 mStatus.style.color = mColor;
+            }
+
+            if (data.btc_dominance) {
+                var bVal = document.getElementById('dash-btcd-value');
+                var bDot = document.getElementById('dash-btcd-dot');
+                var bStatus = document.getElementById('dash-btcd-status');
+                var bColor = getBtcdStatusColor(data.btc_dominance.dominance);
+                if (bVal) {
+                    bVal.textContent = data.btc_dominance.dominance.toFixed(1) + '%';
+                    bVal.classList.remove('skeleton');
+                    bVal.style.color = bColor;
+                }
+                if (bDot) bDot.style.background = bColor;
+                if (bStatus) {
+                    bStatus.textContent = data.btc_dominance.status;
+                    bStatus.style.color = bColor;
+                }
             }
         }
 
@@ -1288,6 +1317,202 @@
 
         if (window.location.hash === '#mvrv') {
             setTimeout(fetchMvrvData, 600);
+        }
+
+        // ==================== BTC Dominance 功能 ====================
+
+        const btcdState = {
+            loaded: false,
+            chart: null,
+            btcdSeries: null,
+            hline40: null,
+            hline60: null,
+            lastFetchTime: 0,
+            allDailyData: []
+        };
+
+        const refreshBtcdBtn = document.getElementById('refresh-btcd-btn');
+        const btcdChartEl = document.getElementById('btcd-chart');
+        const btcdLoading = document.getElementById('btcd-loading');
+        const btcdTooltip = document.getElementById('btcd-tooltip');
+
+        function getBtcdColor(val) {
+            if (val > 60) return '#3b82f6';
+            if (val >= 40) return '#eab308';
+            return '#22c55e';
+        }
+
+        function initBtcdChart() {
+            if (btcdState.chart) return;
+            if (!btcdChartEl) return;
+
+            btcdState.chart = LightweightCharts.createChart(btcdChartEl, {
+                width: btcdChartEl.offsetWidth,
+                height: btcdChartEl.offsetHeight || 350,
+                layout: { background: { color: '#1e1e1e' }, textColor: '#9ca3af' },
+                grid: { vertLines: { color: '#2a2a2a' }, horzLines: { color: '#2a2a2a' } },
+                timeScale: { borderColor: '#2a2a2a', timeVisible: false },
+                rightPriceScale: { borderColor: '#2a2a2a', scaleMargins: { top: 0.1, bottom: 0.05 } },
+                crosshair: { mode: LightweightCharts.CrosshairMode.Normal },
+                handleScroll: true,
+                handleScale: true
+            });
+
+            btcdState.btcdSeries = btcdState.chart.addLineSeries({
+                color: '#3b82f6',
+                lineWidth: 2,
+                title: 'BTCDOM',
+                priceScaleId: 'right',
+                lastValueVisible: true,
+                priceLineVisible: false,
+                priceFormat: { type: 'price', precision: 2, minMove: 0.01 }
+            });
+
+            btcdState.hline60 = btcdState.chart.addLineSeries({
+                color: 'rgba(59,130,246,0.6)',
+                lineWidth: 1,
+                lineStyle: 1,
+                priceScaleId: 'right',
+                lastValueVisible: true,
+                priceLineVisible: false,
+                crosshairMarkerVisible: false,
+                title: '60%'
+            });
+
+            btcdState.hline40 = btcdState.chart.addLineSeries({
+                color: 'rgba(34,197,94,0.6)',
+                lineWidth: 1,
+                lineStyle: 1,
+                priceScaleId: 'right',
+                lastValueVisible: true,
+                priceLineVisible: false,
+                crosshairMarkerVisible: false,
+                title: '40%'
+            });
+
+            btcdState.chart.subscribeCrosshairMove(function(param) {
+                if (!param.time || !param.seriesData) {
+                    if (btcdTooltip) btcdTooltip.style.display = 'none';
+                    return;
+                }
+                var lines = [];
+                var dateStr = param.time.year + '-' +
+                    String(param.time.month).padStart(2, '0') + '-' +
+                    String(param.time.day).padStart(2, '0');
+                lines.push('<span style="color:#9ca3af">' + dateStr + '</span>');
+
+                var btcdData = param.seriesData.get(btcdState.btcdSeries);
+                if (btcdData && btcdData.value !== undefined) {
+                    lines.push('<span style="color:#3b82f6">BTCDOM ' + btcdData.value.toFixed(2) + '%</span>');
+                }
+
+                if (btcdTooltip && lines.length > 1) {
+                    btcdTooltip.innerHTML = lines.join('<br>');
+                    btcdTooltip.style.display = 'block';
+                } else if (btcdTooltip) {
+                    btcdTooltip.style.display = 'none';
+                }
+            });
+        }
+
+        function resizeBtcdChart() {
+            if (btcdState.chart && btcdChartEl) {
+                btcdState.chart.applyOptions({ width: btcdChartEl.clientWidth, height: btcdChartEl.clientHeight });
+            }
+        }
+
+        function updateBtcdCards(current) {
+            var valEl = document.getElementById('btcd-value');
+            var zoneEl = document.getElementById('btcd-zone');
+            var statusEl = document.getElementById('btcd-status');
+            var priceEl = document.getElementById('btcd-price');
+
+            var color = getBtcdColor(current.dominance);
+
+            if (valEl) {
+                valEl.textContent = current.dominance.toFixed(2) + '%';
+                valEl.style.fontWeight = '700';
+            }
+            if (zoneEl) {
+                zoneEl.textContent = current.status;
+                zoneEl.style.color = color;
+            }
+            if (statusEl) {
+                statusEl.textContent = current.status;
+                statusEl.style.color = color;
+            }
+            if (priceEl) {
+                priceEl.textContent = '$' + current.price.toLocaleString();
+            }
+        }
+
+        function renderBtcdChart() {
+            if (!btcdState.chart) initBtcdChart();
+            var data = btcdState.allDailyData;
+            if (!data || data.length === 0) return;
+            btcdState.btcdSeries.setData(data);
+            var firstT = data[0].time;
+            var lastT = data[data.length - 1].time;
+            btcdState.hline60.setData([{ time: firstT, value: 60 }, { time: lastT, value: 60 }]);
+            btcdState.hline40.setData([{ time: firstT, value: 40 }, { time: lastT, value: 40 }]);
+            btcdState.chart.timeScale().fitContent();
+            setTimeout(resizeBtcdChart, 100);
+        }
+
+        function updateBtcdChart(history) {
+            if (!btcdState.chart) initBtcdChart();
+            if (!history || history.length === 0) return;
+
+            var allData = [];
+            for (var i = 0; i < history.length; i++) {
+                var item = history[i];
+                var parts = item.date.split('-');
+                var t = { year: parseInt(parts[0]), month: parseInt(parts[1]), day: parseInt(parts[2]) };
+                allData.push({ time: t, value: item.dominance });
+            }
+            btcdState.allDailyData = allData;
+            renderBtcdChart();
+        }
+
+        function fetchBtcdData() {
+            var now = Date.now();
+            if (now - btcdState.lastFetchTime < 5000) return;
+            btcdState.lastFetchTime = now;
+
+            if (btcdLoading) btcdLoading.style.display = 'block';
+
+            fetch('/get_btc_dominance')
+                .then(function(resp) {
+                    if (!resp.ok) throw new Error('HTTP ' + resp.status);
+                    return resp.json();
+                })
+                .then(function(data) {
+                    if (btcdLoading) btcdLoading.style.display = 'none';
+                    if (data.success) {
+                        updateBtcdCards(data.current);
+                        updateBtcdChart(data.history);
+                        btcdState.loaded = true;
+                    } else {
+                        console.error('BTC Dominance 加载失败:', data.error);
+                    }
+                })
+                .catch(function(err) {
+                    if (btcdLoading) btcdLoading.style.display = 'none';
+                    console.error('BTC Dominance 请求失败:', err);
+                });
+        }
+
+        if (refreshBtcdBtn) {
+            refreshBtcdBtn.addEventListener('click', function() {
+                btcdState.lastFetchTime = 0;
+                fetchBtcdData();
+            });
+        }
+
+        window.addEventListener('resize', debounce(resizeBtcdChart, 200));
+
+        if (window.location.hash === '#btc_dominance') {
+            setTimeout(fetchBtcdData, 600);
         }
     });
 </script> 
