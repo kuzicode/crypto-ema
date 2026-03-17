@@ -658,7 +658,7 @@ BGEOMETRICS_PRICE_URL = "https://bitcoin-data.com/v1/btc-price"
 
 # MVRV 缓存：日级数据无需频繁刷新，缓存 1 小时节省 API 配额
 _mvrv_cache = {"data": None, "timestamp": 0}
-MVRV_CACHE_TTL = 3600  # 秒
+MVRV_CACHE_TTL = 21600  # 6小时；bitcoin-data.com Free 计划每天仅 15 次配额，日线数据无需频繁刷新
 
 
 def fetch_mvrv_data():
