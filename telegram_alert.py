@@ -321,13 +321,16 @@ def main():
         
         # 检查EMA状态是否有变化
         changed_tokens = has_ema_changed(previous_data, current_data)
+
+        # 每次都保存当前状态，确保中间经过的非通知状态也被记录
+        # 否则 A→B（不通知）→A 时，因为上次保存的仍是 A，会错误地认为无变化
+        save_data(current_data)
+
         if changed_tokens:
             logger.info(f"检测到EMA状态变化的币种: {', '.join(changed_tokens)}")
-            # 保存新数据
-            if save_data(current_data):
-                send_telegram_alert(current_data, changed_tokens)
+            send_telegram_alert(current_data, changed_tokens)
         else:
-            logger.info("EMA状态未变化，不更新数据")
+            logger.info("EMA状态未变化，无需提醒")
     
     except Exception as e:
         logger.error(f"运行脚本时出错: {e}")
