@@ -28,6 +28,7 @@ build/
 
 # 数据和日志文件
 assets/
+docs/
 logs/
 *.log
 mail_alerts.json
