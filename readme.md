@@ -39,13 +39,11 @@ source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
-创建 `.env` 文件（参考下方配置说明），然后启动：
+创建 `.env` 文件（参考下方配置说明），然后启动 Telegram 监控：
 
 ```bash
 ./start.sh
 ```
-
-访问 `http://localhost:6969`
 
 停止服务：
 
@@ -77,8 +75,8 @@ COINGECKO_API_KEY=your_coingecko_key
 
 ```
 ├── app.py                  # Flask 入口（含后台缓存预热线程）
-├── start.sh                # 后台启动脚本（app + telegram_alert）
-├── stop.sh                 # 停止脚本
+├── start.sh                # 后台启动脚本（仅 telegram_alert）
+├── stop.sh                 # 停止 telegram_alert 的脚本
 ├── telegram_alert.py       # Telegram 价格提醒脚本
 ├── modules/
 │   ├── routes.py           # API 路由
@@ -94,6 +92,5 @@ COINGECKO_API_KEY=your_coingecko_key
 启动后日志写入 `logs/` 目录：
 
 ```
-logs/app.log               # Flask 服务日志
 logs/telegram_alert.log    # Telegram 提醒脚本日志
 ```
